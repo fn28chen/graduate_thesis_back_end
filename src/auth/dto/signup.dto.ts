@@ -3,13 +3,15 @@ import {
   IsNotEmpty,
   IsString,
   Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
 export class SignUpDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  @MaxLength(20, { message: 'Name is too long' })
+  username: string;
 
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please enter correct email' })

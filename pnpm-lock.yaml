@@ -53,6 +53,9 @@ importers:
       joi:
         specifier: ^17.13.3
         version: 17.13.3
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       passport:
         specifier: ^0.7.0
         version: 0.7.0

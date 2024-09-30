@@ -18,20 +18,28 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
-    const { name, email, password } = signUpDto;
+    // Step 1: Check if the user already exists
+    const userExists = await this.usersRepository.findOne({
+      where: { email: signUpDto.email },
+    });
+    if (userExists) {
+      throw new UnauthorizedException('Error: User already exists!');
+    }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Step 2: Hash the password
+    const genSalt = bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(signUpDto.password, genSalt);
 
-    const user = await this.usersRepository.create({
-      name,
-      email,
+    const newUser = this.usersRepository.create({
+      ...signUpDto,
       password: hashedPassword,
     });
 
-    await this.usersRepository.save(user);
-    const token = this.jwtService.sign({ id: user.id });
+    // Step 3: Save user to the database
+    await this.usersRepository.save(newUser);
+    const token = this.jwtService.sign({ id: newUser.id });
 
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = newUser;
     return { token, user: userWithoutPassword } as {
       token: string;
       user: User;
