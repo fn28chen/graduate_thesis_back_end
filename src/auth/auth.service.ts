@@ -1,6 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+
 import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
+
+import { UsersService } from 'src/users/users.service';
 
 import { SignUpDto } from 'src/auth/dto/signup.dto';
 import { LoginDto } from 'src/auth/dto/login.dto';
@@ -16,7 +25,34 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private configService: ConfigService,
+    private usersService: UsersService,
   ) {}
+
+  async createTokenPair(payload: any): Promise<any> {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '1d',
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  hashData(data: string) {
+    console.log('Hashing data: ', typeof argon2.hash(data));
+    return argon2.hash(data);
+  }
+
+  async updateRefreshToken(id: number, refreshToken: string) {
+    const hashedRefreshToken = await this.hashData(refreshToken);
+    await this.usersService.updateById(id, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
 
   async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
     // Step 1: Check if the user already exists
@@ -24,21 +60,23 @@ export class AuthService {
       where: { email: signUpDto.email },
     });
     if (userExists) {
-      throw new UnauthorizedException('Error: User already exists!');
+      throw new BadRequestException('Error: User already exists!');
     }
 
     // Step 2: Hash the password
     const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
 
+    // Step 3: Save user to the database, set roles to user
     const newUser = this.usersRepository.create({
       ...signUpDto,
       password: hashedPassword,
     });
-
-    // Step 3: Save user to the database, set roles to user
     await this.usersRepository.save(newUser);
-    const token = this.jwtService.sign({ id: newUser.id });
+
+    // Step 4: Create a token pair
+    const token = await this.createTokenPair({ id: newUser.id });
     const { password: _, ...userWithoutPassword } = newUser;
+    console.log('Token: ', token);
     return { token, user: userWithoutPassword } as {
       token: string;
       user: User;

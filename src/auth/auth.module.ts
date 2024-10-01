@@ -7,6 +7,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from 'src/auth/strategy/jwt.strategy';
 import { User } from 'src/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
+import { AccessTokenStrategy } from './strategy/accessToken.strategy';
+import { RefreshTokenStrategy } from './strategy/refreshToken.strategy';
 
 @Module({
   imports: [
@@ -24,9 +27,15 @@ import { User } from 'src/entities/user.entity';
       },
     }),
     TypeOrmModule.forFeature([User]),
+    UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+  ],
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}
