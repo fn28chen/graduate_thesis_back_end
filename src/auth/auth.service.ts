@@ -1,13 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 import { SignUpDto } from 'src/auth/dto/signup.dto';
 import { LoginDto } from 'src/auth/dto/login.dto';
 
-import User from 'src/users/users.entity';
+import { User } from 'src/entities/user.entity';
+
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
@@ -27,18 +28,16 @@ export class AuthService {
     }
 
     // Step 2: Hash the password
-    const genSalt = bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(signUpDto.password, genSalt);
+    const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
 
     const newUser = this.usersRepository.create({
       ...signUpDto,
       password: hashedPassword,
     });
 
-    // Step 3: Save user to the database
+    // Step 3: Save user to the database, set roles to user
     await this.usersRepository.save(newUser);
     const token = this.jwtService.sign({ id: newUser.id });
-
     const { password: _, ...userWithoutPassword } = newUser;
     return { token, user: userWithoutPassword } as {
       token: string;
@@ -57,7 +56,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Compare the password from login and the password from the database
     const isPasswordMatched = await bcrypt.compare(password, user.password);
+    console.log(isPasswordMatched);
 
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid email or password');

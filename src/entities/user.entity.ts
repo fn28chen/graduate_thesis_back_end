@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import { Role } from 'src/auth/enums/role.enum';
 
 @Entity('users')
@@ -15,10 +15,7 @@ export class User {
   id: number;
 
   @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
+  username: string;
 
   @Column()
   email: string;
@@ -41,9 +38,4 @@ export class User {
 
   @Column({ nullable: true })
   hashedRefreshToken: string;
-
-  @BeforeInsert()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
 }

@@ -7,37 +7,38 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import User from 'src/users/users.entity';
+import { User } from 'src/entities/user.entity';
 import { UsersService } from './users.service';
-import { UserDTO } from 'src/users/dto/user.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Role } from 'src/auth/enums/role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
-@Controller('users')
+@Roles(Role.USER)
+@Controller('user')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly userService: UsersService) {}
 
   @Get()
   async getAllUsers(): Promise<User[]> {
-    const users = await this.usersService.getAllUsers();
+    const users = await this.userService.getAllUsers();
     return users;
   }
 
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.getUserById(Number(id));
+    const user = await this.userService.findOne(Number(id));
     return user;
   }
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
-  async createUser(@Body() createUserDto: UserDTO): Promise<User> {
-    const newUser = await this.usersService.createUser(createUserDto);
-    return newUser;
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
 
   @Delete(':id')
   async deleteById(@Param('id') id: string): Promise<User> {
-    const user = this.usersService.deleteById(Number(id));
+    const user = this.userService.deleteById(Number(id));
     return user;
   }
 }
