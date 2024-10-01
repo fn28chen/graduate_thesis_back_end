@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from 'src/strategy/jwt.strategy';
-import User from 'src/users/users.entity';
+import { User } from 'src/entities/user.entity';
 
 @Module({
   imports: [

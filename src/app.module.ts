@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as Joi from 'joi';
-import { DatabaseModule } from 'src/database/database.module';
+import { DatabaseModule } from 'src/config/database.config';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { AppService } from 'src/app.service';

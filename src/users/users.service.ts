@@ -1,8 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import User from 'src/users/users.entity';
-import { UserDTO } from './dto/user.dto';
+import { User } from 'src/entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
 
 export class UsersService {
   constructor(
@@ -10,12 +12,16 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
+  async updateHashedRefreshToken(userId: number, hashedRefreshToken: string) {
+    return await this.usersRepository.update({ id: userId }, { hashedRefreshToken });
+  }
+
   async getAllUsers() {
     const users = this.usersRepository.find();
     return users;
   }
 
-  async getUserById(id: number) {
+  async findOne(id: number) {
     const user = await this.usersRepository.findOne({
       where: {
         id: id,
@@ -27,14 +33,9 @@ export class UsersService {
     throw new NotFoundException('Could not find the user');
   }
 
-  async createUser(createUserDto: UserDTO) {
-    const newUser = await this.usersRepository.create(createUserDto);
-    await this.usersRepository.save({
-      name: createUserDto.name,
-      email: createUserDto.email,
-      password: createUserDto.password,
-    });
-    return newUser;
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.usersRepository.create(createUserDto);
+    return await this.usersRepository.save(user);
   }
 
   async deleteById(id: number) {
