@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 
@@ -22,5 +22,11 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Body() refreshToken: { refreshToken: string }) {
     return this.authService.refreshTokens(refreshToken.refreshToken);
+  }
+
+  @Get('logout')
+  async logout(@Req() req: any) {
+    const userId = req.user.id;
+    return this.authService.logout(userId);
   }
 }

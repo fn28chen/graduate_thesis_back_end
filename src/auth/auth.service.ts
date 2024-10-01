@@ -64,7 +64,7 @@ export class AuthService {
     }
 
     // Step 2: Hash the password
-    const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
+    const hashedPassword = await this.hashData(signUpDto.password);
 
     // Step 3: Save user to the database, set roles to user
     const newUser = this.usersRepository.create({
@@ -86,6 +86,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<{ token: string }> {
     const { email, password } = loginDto;
 
+    // Step 1: Check if the user exists
     const user = await this.usersRepository.findOne({
       where: { email },
     });
@@ -94,21 +95,30 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Compare the password from login and the password from the database
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    // Step 2: Compare the password from login and the password from the database
+    const isPasswordMatched = await argon2.verify(user.password, password);
+
     console.log(isPasswordMatched);
 
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const token = this.jwtService.sign({ id: user.id });
-
+    // Step 3: Create a token pair
+    const tokens = await this.createTokenPair({ id: user.id });
     const { password: _, ...userWithoutPassword } = user;
-    return { token, user: userWithoutPassword } as {
+    console.log('Token: ', tokens);
+    return { token: tokens.accessToken, user: userWithoutPassword } as {
       token: string;
       user: User;
     };
+  }
+
+  async logout(id: number) {
+    // Step 1: Revoke the refresh token
+
+    // Step 2: Logout user
+    await this.usersService.updateById(id, { refreshToken: null });
   }
 
   async refreshTokens(refreshToken: string): Promise<{ token: string }> {
