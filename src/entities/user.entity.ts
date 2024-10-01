@@ -1,12 +1,10 @@
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import * as bcrypt from 'bcrypt';
 import { Role } from 'src/auth/enums/role.enum';
 
 @Entity('users')
