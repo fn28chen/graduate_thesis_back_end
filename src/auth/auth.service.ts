@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -20,6 +21,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeyTokenService } from 'src/key-token/key-token.service';
 import { LogoutDto } from './dto/logout.dto';
+import { STATUS_CODES } from 'http';
 
 @Injectable()
 export class AuthService {
@@ -141,15 +143,12 @@ export class AuthService {
   async logout(logoutDto: LogoutDto) {
     // Step 1: Add the access token and refresh token to the blacklist
     // Khong can doi
-    try {
-      const { accessToken, refreshToken } = logoutDto;
-      await this.keyTokenService.addTokenToBlacklist(accessToken);
-      await this.keyTokenService.addTokenToBlacklist(refreshToken);
-      
-      return { message: 'Successfully logged out' };
-    } catch (error) {
-      console.log('Error: ', error);
-    }
+    const { accessToken, refreshToken } = logoutDto;
+
+    await this.keyTokenService.addTokenToBlacklist(accessToken);
+    await this.keyTokenService.addTokenToBlacklist(refreshToken);
+
+    return { message: 'Successfully logged out' };
   }
 
   async refreshTokens(refreshToken: string): Promise<{ token: string }> {

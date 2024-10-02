@@ -10,15 +10,21 @@ export class KeyTokenService {
     private keyTokenRepository: Repository<BlackListToken>,
   ) {}
 
-  async addTokenToBlacklist(token: string) {
-    const blackListToken = await this.keyTokenRepository.create({ token });
-    return await this.keyTokenRepository.save(blackListToken);
-  }
-
   async isBlacklisted(token: string): Promise<boolean> {
     const blackListToken = await this.keyTokenRepository.findOne({
       where: { token },
     });
     return !!blackListToken;
   }
+
+  async addTokenToBlacklist(token: string) {
+    const isBlacklisted = await this.isBlacklisted(token);
+    if (isBlacklisted) {
+      throw new NotFoundException('Token already blacklisted');
+    }
+    const blackListToken = await this.keyTokenRepository.create({ token });
+    return await this.keyTokenRepository.save(blackListToken);
+  }
+
+  
 }

@@ -21,12 +21,14 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token is required');
     }
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
-      });
-      request['token'] = payload;
-    } catch {
+
+    const isBlacklisted = await this.checkBlacklist(token);
+    if (isBlacklisted) {
+      throw new UnauthorizedException('Token is blacklisted');
+    }
+
+    const validToken = await this.checkValidToken(request, token);
+    if (!validToken) {
       throw new UnauthorizedException('Token is invalid');
     }
     return true;
@@ -36,10 +38,23 @@ export class AuthGuard implements CanActivate {
     request: Request,
   ): Promise<string | undefined> {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    const isBlacklisted = await this.keyTokenService.isBlacklisted(token);
-    if (isBlacklisted) {
-      throw new UnauthorizedException('Token is in blacklist');
-    }
     return type === 'Bearer' ? token : undefined;
+  }
+
+  private async checkBlacklist(token: string) {
+    const isBlacklisted = await this.keyTokenService.isBlacklisted(token);
+    return isBlacklisted;
+  }
+
+  private async checkValidToken(request: Request, token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      request['token'] = payload;
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
