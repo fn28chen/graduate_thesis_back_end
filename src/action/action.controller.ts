@@ -82,6 +82,16 @@ export class ActionController {
     // });
   }
 
+  @Get('list')
+  async listFiles(@Req() req) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching list controller\x1b[0m\n=========================================',
+    );
+    console.log('user_id:', user_id);
+    return this.actionService.getFileFromUser(user_id);
+  }
+
   @Delete('delete/:fileName')
   async deleteFile(@Req() req, @Param('fileName') fileName: string) {
     const user_id = req.user['id'];

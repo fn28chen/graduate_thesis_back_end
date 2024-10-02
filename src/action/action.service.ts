@@ -57,5 +57,12 @@ export class ActionService {
     );
   }
 
-
+  async getFileFromUser(user_id: string) {
+    const listResponse = await this.s3Client.send(
+      new GetObjectCommand({
+        Bucket: 'nestjs-uploader-indicloud',
+        Key: `${user_id}/`,
+      }),
+    );
+  }
 }
