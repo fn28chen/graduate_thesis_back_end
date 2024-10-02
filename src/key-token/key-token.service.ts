@@ -14,4 +14,11 @@ export class KeyTokenService {
     const blackListToken = await this.keyTokenRepository.create({ token });
     return await this.keyTokenRepository.save(blackListToken);
   }
+
+  async isBlacklisted(token: string): Promise<boolean> {
+    const blackListToken = await this.keyTokenRepository.findOne({
+      where: { token },
+    });
+    return !!blackListToken;
+  }
 }

@@ -145,6 +145,7 @@ export class AuthService {
       const { accessToken, refreshToken } = logoutDto;
       await this.keyTokenService.addTokenToBlacklist(accessToken);
       await this.keyTokenService.addTokenToBlacklist(refreshToken);
+      
       return { message: 'Successfully logged out' };
     } catch (error) {
       console.log('Error: ', error);
