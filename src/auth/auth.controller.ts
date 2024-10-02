@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
+import { LogoutDto } from './dto/logout.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,8 +26,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Req() req: any) {
-    const userId = req.user.id;
-    return this.authService.logout(userId);
+  async logout(@Body() logoutDto: LogoutDto) {
+    return this.authService.logout(logoutDto);
   }
 }
