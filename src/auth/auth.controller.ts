@@ -24,7 +24,7 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken.refreshToken);
   }
 
-  @Get('logout')
+  @Post('logout')
   async logout(@Req() req: any) {
     const userId = req.user.id;
     return this.authService.logout(userId);

@@ -7,6 +7,7 @@ import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { AppService } from 'src/app.service';
 import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
+import { KeyTokenModule } from './key-token/key-token.module';
 
 @Module({
   imports: [
@@ -22,14 +23,17 @@ import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
       isGlobal: true,
     }),
     DatabaseModule,
-    UsersModule,
     AuthModule,
+    UsersModule,
+    KeyTokenModule,
   ],
   providers: [
     AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
-    },],
+    },
+  ],
+  controllers: [],
 })
 export class AppModule {}

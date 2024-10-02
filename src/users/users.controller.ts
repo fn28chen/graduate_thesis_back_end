@@ -36,6 +36,7 @@ export class UsersController {
     return this.userService.create(createUserDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   async deleteById(@Param('id') id: string): Promise<User> {
     const user = this.userService.deleteById(Number(id));

@@ -18,6 +18,7 @@ import { User } from 'src/entities/user.entity';
 
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { KeyTokenService } from 'src/key-token/key-token.service';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private usersService: UsersService,
+    private keyTokenService: KeyTokenService,
   ) {}
 
   async createTokenPair(payload: any): Promise<any> {
@@ -43,7 +45,7 @@ export class AuthService {
   }
 
   hashData(data: string) {
-    console.log('Hashing data: ', typeof argon2.hash(data));
+    // console.log('Hashing data: ', typeof argon2.hash(data));
     return argon2.hash(data);
   }
 
@@ -97,25 +99,52 @@ export class AuthService {
 
     // Step 2: Compare the password from login and the password from the database
     const isPasswordMatched = await argon2.verify(user.password, password);
-
-    console.log(isPasswordMatched);
-
+    console.log('Password match:', isPasswordMatched);
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Step 3: Create a token pair
+    // Step 3: Create a token pair and save the refresh token to the database
     const tokens = await this.createTokenPair({ id: user.id });
     const { password: _, ...userWithoutPassword } = user;
     console.log('Token: ', tokens);
+
+    // Save refresh token to key-token table
+    await this.keyTokenService.create({
+      userId: user.id,
+      refreshToken: tokens.refreshToken,
+      createdAt: new Date(),
+    });
+
     return { token: tokens.accessToken, user: userWithoutPassword } as {
       token: string;
       user: User;
     };
   }
 
+  async validateRefreshToken(userId: number, refreshToken: string) {
+    const user = await this.usersService.findOne(userId);
+    if (!user || !user.hashedRefreshToken)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    const refreshTokenMatches = await argon2.verify(
+      user.hashedRefreshToken,
+      refreshToken,
+    );
+    if (!refreshTokenMatches)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    return { id: userId };
+  }
+
   async logout(id: number) {
     // Step 1: Revoke the refresh token
+    const keyToken = await this.keyTokenService.findOneByUserId(id);
+    console.log('Key token: ', keyToken);
+    if (!keyToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    await this.keyTokenService.deleteById(keyToken.id);
 
     // Step 2: Logout user
     await this.usersService.updateById(id, { refreshToken: null });
