@@ -22,7 +22,7 @@ export class KeyTokenService {
     if (isBlacklisted) {
       throw new NotFoundException('Token already blacklisted');
     }
-    const blackListToken = await this.keyTokenRepository.create({ token });
+    const blackListToken = this.keyTokenRepository.create({ token });
     return await this.keyTokenRepository.save(blackListToken);
   }
 
