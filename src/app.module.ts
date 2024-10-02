@@ -8,6 +8,9 @@ import { AuthModule } from 'src/auth/auth.module';
 import { AppService } from 'src/app.service';
 import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
 import { KeyTokenModule } from './key-token/key-token.module';
+import { ActionController } from './action/action.controller';
+import { ActionService } from './action/action.service';
+import { ActionModule } from './action/action.module';
 
 @Module({
   imports: [
@@ -26,6 +29,7 @@ import { KeyTokenModule } from './key-token/key-token.module';
     AuthModule,
     UsersModule,
     KeyTokenModule,
+    ActionModule,
   ],
   providers: [
     AppService,
@@ -33,7 +37,8 @@ import { KeyTokenModule } from './key-token/key-token.module';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    ActionService,
   ],
-  controllers: [],
+  controllers: [ActionController],
 })
 export class AppModule {}
