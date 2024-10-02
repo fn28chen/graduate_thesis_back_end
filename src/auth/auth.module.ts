@@ -5,11 +5,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from 'src/auth/strategy/jwt.strategy';
 import { User } from 'src/entities/user.entity';
+import { JwtStrategy } from 'src/auth/strategy/jwt.strategy';
+import { AccessTokenStrategy } from 'src/auth/strategy/accessToken.strategy';
+import { RefreshTokenStrategy } from 'src/auth/strategy/refreshToken.strategy';
 import { UsersModule } from 'src/users/users.module';
-import { AccessTokenStrategy } from './strategy/accessToken.strategy';
-import { RefreshTokenStrategy } from './strategy/refreshToken.strategy';
+import { KeyTokenModule } from 'src/key-token/key-token.module';
+import { UsersService } from 'src/users/users.service';
+import jwtConfig from './config/jwt.config';
+import refreshJwtConfig from './config/refresh-jwt.config';
 
 @Module({
   imports: [
@@ -27,11 +31,16 @@ import { RefreshTokenStrategy } from './strategy/refreshToken.strategy';
       },
     }),
     TypeOrmModule.forFeature([User]),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(refreshJwtConfig),
     UsersModule,
+    KeyTokenModule,
   ],
   controllers: [AuthController],
   providers: [
     AuthService,
+    UsersService,
     JwtStrategy,
     AccessTokenStrategy,
     RefreshTokenStrategy,

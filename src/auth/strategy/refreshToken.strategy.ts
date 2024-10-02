@@ -1,23 +1,36 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import { AuthService } from '../auth.service';
+import { AuthJwtPayload } from '../types/auth-jwtPayload';
+import refreshJwtConfig from 'src/auth/config/refresh-jwt.config';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
   Strategy,
-  'jwt-refresh',
+  'refresh-jwt',
 ) {
-  constructor() {
+  constructor(
+    @Inject(refreshJwtConfig.KEY)
+    private refrshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
+    private authService: AuthService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_REFRESH_SECRET,
+      secretOrKey: refrshJwtConfiguration.secret,
+      ignoreExpiration: false,
       passReqToCallback: true,
     });
   }
 
-  validate(req: Request, payload: any) {
-    const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
-    return { ...payload, refreshToken };
+  // authorization: Bearer sldfk;lsdkf'lskald'sdkf;sdl
+
+  validate(req: Request, payload: AuthJwtPayload) {
+    const refreshToken = req.get('authorization').replace('Bearer', '').trim();
+    const userId = payload.sub;
+    return this.authService.validateRefreshToken(userId, refreshToken);
   }
 }
+

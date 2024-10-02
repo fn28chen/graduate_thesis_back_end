@@ -1,11 +1,19 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UsePipes,
+} from '@nestjs/common';
 
 import { AuthService } from './auth.service';
+import { ValidationPipe } from 'src/utils/validation/validation.pipe';
 
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
+import { LogoutDto } from './dto/logout.dto';
 
 @Controller('auth')
+@UsePipes(new ValidationPipe())
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -24,9 +32,9 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken.refreshToken);
   }
 
-  @Get('logout')
-  async logout(@Req() req: any) {
-    const userId = req.user.id;
-    return this.authService.logout(userId);
+  
+  @Post('logout')
+  async logout(@Body() logoutDto: LogoutDto) {
+    return this.authService.logout(logoutDto);
   }
 }

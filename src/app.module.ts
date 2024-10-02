@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as Joi from 'joi';
@@ -7,6 +7,8 @@ import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { AppService } from 'src/app.service';
 import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
+import { KeyTokenModule } from './key-token/key-token.module';
+import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -22,14 +24,22 @@ import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
       isGlobal: true,
     }),
     DatabaseModule,
-    UsersModule,
     AuthModule,
+    UsersModule,
+    KeyTokenModule,
   ],
   providers: [
     AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
-    },],
+    },
+  ],
+  controllers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+
+}
