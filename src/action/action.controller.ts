@@ -32,7 +32,6 @@ export class ActionController {
 
   @Post('upload')
   @UseGuards(JwtGuard)
-  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Upload a file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
