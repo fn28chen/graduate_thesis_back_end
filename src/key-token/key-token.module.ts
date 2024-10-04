@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeyToken } from 'src/entities/keyToken.entity';
-import { KeyTokenController } from './key-token.controller';
+import { BlackListToken } from 'src/entities/blackList.entity';
 import { KeyTokenService } from './key-token.service';
 @Module({
-    imports: [TypeOrmModule.forFeature([KeyToken])],
-    controllers: [KeyTokenController],
+    imports: [TypeOrmModule.forFeature([BlackListToken])],
     providers: [KeyTokenService],
     exports: [KeyTokenService],
 })

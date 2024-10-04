@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -18,6 +19,8 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeyTokenService } from 'src/key-token/key-token.service';
+import { LogoutDto } from './dto/logout.dto';
+import { STATUS_CODES } from 'http';
 
 @Injectable()
 export class AuthService {
@@ -84,7 +87,9 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto): Promise<{ token: string }> {
+  async login(
+    loginDto: LoginDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password } = loginDto;
 
     // Step 1: Check if the user exists
@@ -108,15 +113,13 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
     console.log('Token: ', tokens);
 
-    // Save refresh token to key-token table
-    await this.keyTokenService.create({
-      userId: user.id,
+    return {
+      accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      createdAt: new Date(),
-    });
-
-    return { token: tokens.accessToken, user: userWithoutPassword } as {
-      token: string;
+      user: userWithoutPassword,
+    } as {
+      accessToken: string;
+      refreshToken: string;
       user: User;
     };
   }
@@ -136,17 +139,15 @@ export class AuthService {
     return { id: userId };
   }
 
-  async logout(id: number) {
-    // Step 1: Revoke the refresh token
-    const keyToken = await this.keyTokenService.findOneByUserId(id);
-    console.log('Key token: ', keyToken);
-    if (!keyToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    await this.keyTokenService.deleteById(keyToken.id);
+  async logout(logoutDto: LogoutDto) {
+    // Step 1: Add the access token and refresh token to the blacklist
+    // Khong can doi
+    const { accessToken, refreshToken } = logoutDto;
 
-    // Step 2: Logout user
-    await this.usersService.updateById(id, { refreshToken: null });
+    await this.keyTokenService.addTokenToBlacklist(accessToken);
+    await this.keyTokenService.addTokenToBlacklist(refreshToken);
+
+    return { message: 'Successfully logged out' };
   }
 
   async refreshTokens(refreshToken: string): Promise<{ token: string }> {

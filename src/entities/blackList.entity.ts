@@ -2,20 +2,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 
-@Entity('key-token')
-export class KeyToken {
+// Fix to blacklist-token
+@Entity('black-list-token')
+export class BlackListToken {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  refreshToken: string;
-
-  @Column()
-  userId: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
+  @Unique(['token'])
+  token: string;
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as Joi from 'joi';
@@ -11,6 +11,8 @@ import { KeyTokenModule } from './key-token/key-token.module';
 import { ActionController } from './action/action.controller';
 import { ActionService } from './action/action.service';
 import { ActionModule } from './action/action.module';
+import { LoggerMiddleware } from './middleware/logger.middleware';
+
 
 @Module({
   imports: [
@@ -41,4 +43,9 @@ import { ActionModule } from './action/action.module';
   ],
   controllers: [ActionController],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+
+}
