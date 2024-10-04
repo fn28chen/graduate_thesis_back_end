@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import * as bcrypt from 'bcrypt';
 import * as argon2 from 'argon2';
 
 import { UsersService } from 'src/users/users.service';

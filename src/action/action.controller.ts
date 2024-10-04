@@ -8,6 +8,7 @@ import {
   Req,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ActionService } from './action.service';
@@ -15,12 +16,39 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { createWriteStream } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { JwtGuard } from 'src/guards/jwt.guard';
 
+@ApiBearerAuth()
 @Controller('action')
 export class ActionController {
   constructor(private readonly actionService: ActionService) {}
 
   @Post('upload')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @Req() req,
@@ -34,7 +62,8 @@ export class ActionController {
     )
     file: Express.Multer.File,
   ) {
-    const user_id = req.user['id'];
+    console.log(req.user);
+    const user_id = req.user?.['id'];
     console.log(
       '\x1b[33mReaching upload controller\x1b[0m\n=========================================',
     );
@@ -71,15 +100,17 @@ export class ActionController {
         }
       });
     });
+  }
 
-    // writeStream.on('finish', () => {
-    //   res.setHeader('Content-Type', 'application/octet-stream');
-    //   res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-    //   res.setHeader('Content-Length', fs.statSync(downloadPath).size);
-
-    //   const readStream = fs.createReadStream(downloadPath);
-    //   readStream.pipe(res);
-    // });
+  @Get('presigned-url/:fileName')
+  async getPresignedUrl(@Req() req, @Param('fileName') fileName: string) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching presigned-url controller\x1b[0m\n=========================================',
+    );
+    console.log('user_id:', user_id);
+    console.log('fileName:', fileName);
+    return this.actionService.getPresignedSignedUrl(user_id, fileName);
   }
 
   @Get('list')
