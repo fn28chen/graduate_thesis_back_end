@@ -102,14 +102,16 @@ export class ActionController {
   }
 
   @Get('presigned-url/:fileName')
+  @UseGuards(JwtGuard)
   async getPresignedUrl(@Req() req, @Param('fileName') fileName: string) {
+    console.log(req.user);
     const user_id = req.user['id'];
     console.log(
       '\x1b[33mReaching presigned-url controller\x1b[0m\n=========================================',
     );
     console.log('user_id:', user_id);
     console.log('fileName:', fileName);
-    return this.actionService.getPresignedSignedUrl(user_id, fileName);
+    return this.actionService.getPresignedUrl(user_id, fileName);
   }
 
   @Get('list')

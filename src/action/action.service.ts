@@ -59,9 +59,9 @@ export class ActionService {
     }
   }
 
-  async getPresignedSignedUrl(user_id: string, fileName: string) {
+  async getPresignedUrl(user_id: string, fileName: string) {
     const params = {
-      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Bucket: 'nestjs-uploader-indicloud',
       Key: `${user_id}/${fileName}`,
     };
 
