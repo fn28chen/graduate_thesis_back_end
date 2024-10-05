@@ -22,10 +22,12 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from 'src/guards/jwt.guard';
 
 @ApiBearerAuth()
+@ApiTags('action')
 @Controller('action')
 export class ActionController {
   constructor(private readonly actionService: ActionService) {}
@@ -48,6 +50,17 @@ export class ActionController {
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @Req() req,
@@ -67,6 +80,8 @@ export class ActionController {
       '\x1b[33mReaching upload controller\x1b[0m\n=========================================',
     );
     console.log('user_id:', user_id);
+    console.log('file name: ', file.originalname);
+    console.log('file size: ', file.size);
     await this.actionService.upload(user_id, file.originalname, file.buffer);
   }
 
@@ -101,17 +116,24 @@ export class ActionController {
     });
   }
 
-  @Get('presigned-url/:fileName')
-  @UseGuards(JwtGuard)
-  async getPresignedUrl(@Req() req, @Param('fileName') fileName: string) {
-    console.log(req.user);
+  @Get('download-presigned/:fileName')
+  async downloadFileWithPresignedUrl(
+    @Req() req,
+    @Param('fileName') fileName: string,
+    @Res() res,
+  ) {
     const user_id = req.user['id'];
     console.log(
-      '\x1b[33mReaching presigned-url controller\x1b[0m\n=========================================',
+      '\x1b[33mReaching download-presigned controller\x1b[0m\n=========================================',
     );
     console.log('user_id:', user_id);
     console.log('fileName:', fileName);
-    return this.actionService.getPresignedUrl(user_id, fileName);
+
+    const presignedUrl = await this.actionService.getPresignedSignedUrl(
+      user_id,
+      fileName,
+    );
+    res.redirect(presignedUrl);
   }
 
   @Get('list')
