@@ -7,13 +7,18 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
 import { User } from 'src/entities/user.entity';
-import { UsersService } from './users.service';
+
+import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
 
+@ApiTags('user')
 @Roles(Role.USER)
 @Controller('user')
 export class UsersController {
