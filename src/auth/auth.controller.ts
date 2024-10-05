@@ -1,10 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
-import {
-  Body,
-  Controller,
-  Post,
-  UsePipes,
-} from '@nestjs/common';
+import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { ValidationPipe } from 'src/utils/validation/validation.pipe';
@@ -12,6 +6,7 @@ import { ValidationPipe } from 'src/utils/validation/validation.pipe';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
