@@ -129,7 +129,7 @@ export class ActionController {
     console.log('user_id:', user_id);
     console.log('fileName:', fileName);
 
-    const presignedUrl = await this.actionService.getPresignedSignedUrl(
+    const presignedUrl = await this.actionService.getPresignedUrl(
       user_id,
       fileName,
     );
