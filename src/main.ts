@@ -8,21 +8,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle('Graduate Thesis API')
+    .setDescription('Graduate Thesis API description')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
   await app.listen(8080);
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
-    .setVersion('1.0')
-    .addTag('cats')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-  await app.listen(3000);
 
   if (module.hot) {
     module.hot.accept();

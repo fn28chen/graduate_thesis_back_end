@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   GetObjectCommand,
   PutObjectCommand,
+  PutObjectCommandOutput,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
@@ -23,7 +24,11 @@ export class ActionService {
     },
   });
 
-  async upload(user_id: string, fileName: string, file: Buffer): Promise<void> {
+  async upload(
+    user_id: string,
+    fileName: string,
+    file: Buffer,
+  ): Promise<PutObjectCommandOutput> {
     const uploadResponse = await this.s3Client.send(
       new PutObjectCommand({
         Bucket: 'nestjs-uploader-indicloud',
@@ -32,10 +37,10 @@ export class ActionService {
         ACL: 'bucket-owner-full-control',
       }),
     );
-
     if (!uploadResponse) {
       throw new BadRequestException('File not uploaded');
     }
+    return uploadResponse;
   }
 
   async download(user_id: string, fileName: string) {
@@ -61,7 +66,7 @@ export class ActionService {
     };
 
     const command = new GetObjectCommand(params);
-    const seconds = 60 * 60 * 12;
+    const seconds = 60 * 30;
     const presignedUrl = await getSignedUrl(this.s3Client as any, command, {
       expiresIn: seconds,
     });
