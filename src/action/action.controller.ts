@@ -86,6 +86,11 @@ export class ActionController {
   }
 
   @Get('download/:fileName')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Download a file with presigned link' })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async downloadFile(
     @Req() req,
     @Param('fileName') fileName: string,
@@ -117,6 +122,11 @@ export class ActionController {
   }
 
   @Get('download-presigned/:fileName')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Download a file with presigned link' })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async downloadFileWithPresignedUrl(
     @Req() req,
     @Param('fileName') fileName: string,
@@ -136,7 +146,12 @@ export class ActionController {
     res.redirect(presignedUrl);
   }
 
-  @Get('list')
+  @Get('list-me')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Get list file of current user' })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async listFiles(@Req() req) {
     const user_id = req.user['id'];
     console.log(
