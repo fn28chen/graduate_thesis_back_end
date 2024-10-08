@@ -1,11 +1,8 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { z } from 'zod';
 
-export class LogoutDto {
-  @IsNotEmpty()
-  @IsString()
-  accessToken: string;
+export const LogoutDto = z.object({
+  accessToken: z.string().nonempty(),
+  refreshToken: z.string().nonempty(),
+});
 
-  @IsNotEmpty()
-  @IsString()
-  refreshToken: string;
-}
+export type LogoutDto = z.infer<typeof LogoutDto>;

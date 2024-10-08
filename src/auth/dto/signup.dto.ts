@@ -1,28 +1,15 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { z } from 'zod';
 
-export class SignUpDto {
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(20, { message: 'Name is too long' })
-  username: string;
+export const SignUpSchema = z.object({
+  username: z.string().max(20, { message: 'Name is too long' }),
+  email: z.string().email({ message: 'Please enter correct email' }),
+  password: z
+    .string()
+    .min(6, { message: 'Password must be at least 6 characters long' })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/, {
+      message:
+        'Password must contain at least one uppercase letter, one lowercase letter and one number',
+    }),
+});
 
-  @IsNotEmpty()
-  @IsEmail({}, { message: 'Please enter correct email' })
-  email: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter and one number',
-  })
-  password: string;
-}
+export type SignUpDto = z.infer<typeof SignUpSchema>;
