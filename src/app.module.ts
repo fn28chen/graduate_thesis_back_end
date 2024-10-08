@@ -1,6 +1,7 @@
+import { ZodValidationPipe } from 'nestjs-zod';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import * as Joi from 'joi';
 import { DatabaseModule } from 'src/config/database.config';
 import { UsersModule } from 'src/users/users.module';
@@ -12,7 +13,6 @@ import { ActionController } from './action/action.controller';
 import { ActionService } from './action/action.service';
 import { ActionModule } from './action/action.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
-
 
 @Module({
   imports: [
@@ -39,6 +39,10 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
     ActionService,
   ],
   controllers: [ActionController],
@@ -47,5 +51,4 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
-
 }

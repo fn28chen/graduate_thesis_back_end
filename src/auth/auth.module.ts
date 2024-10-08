@@ -14,6 +14,7 @@ import { KeyTokenModule } from 'src/key-token/key-token.module';
 import { UsersService } from 'src/users/users.service';
 import jwtConfig from './config/jwt.config';
 import refreshJwtConfig from './config/refresh-jwt.config';
+import { APP_PIPE } from '@nestjs/core';
 
 @Module({
   imports: [
