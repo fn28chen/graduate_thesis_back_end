@@ -83,6 +83,7 @@ export class ActionController {
     console.log('file name: ', file.originalname);
     console.log('file size: ', file.size);
     await this.actionService.upload(user_id, file.originalname, file.buffer);
+    return { message: 'File uploaded successfully' };
   }
 
   @Get('download/:fileName')
@@ -162,6 +163,7 @@ export class ActionController {
   }
 
   @Delete('delete/:fileName')
+  @UseGuards(JwtGuard)
   async deleteFile(@Req() req, @Param('fileName') fileName: string) {
     const user_id = req.user['id'];
     console.log(

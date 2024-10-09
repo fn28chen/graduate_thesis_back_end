@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import {
   GetObjectCommand,
+  ListObjectsCommand,
   PutObjectCommand,
   PutObjectCommandOutput,
   S3Client,
@@ -88,15 +89,12 @@ export class ActionService {
   }
 
   async getFileFromUser(user_id: string) {
-    const listResponse = await this.s3Client.send(
-      new GetObjectCommand({
+    const listObjects = await this.s3Client.send(
+      new ListObjectsCommand({
         Bucket: 'nestjs-uploader-indicloud',
-        Key: `${user_id}/`,
+        Prefix: `${user_id}/`,
       }),
     );
-
-    if (!listResponse) {
-      throw new BadRequestException('No files found');
-    }
+    return listObjects.Contents;
   }
 }
