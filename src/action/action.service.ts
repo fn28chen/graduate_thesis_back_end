@@ -95,6 +95,19 @@ export class ActionService {
         Prefix: `${user_id}/`,
       }),
     );
-    return listObjects.Contents;
+
+    if (!listObjects.Contents) {
+      throw new BadRequestException('No files found for the user');
+    }
+
+    const filesWithUrls = listObjects.Contents.map((file) => {
+      const url = `https://${'nestjs-uploader-indicloud'}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
+      return {
+        ...file,
+        url,
+      };
+    });
+
+    return filesWithUrls;
   }
 }

@@ -90,7 +90,7 @@ export class ActionController {
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Download a file with presigned link' })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
-  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 400, description: 'Something wrong when request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async downloadFile(
     @Req() req,
