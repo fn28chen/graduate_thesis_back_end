@@ -19,8 +19,9 @@ export class ActionService {
 
   private readonly s3Client = new S3Client({
     region: this.configService.get('AWS_REGION'),
+    endpoint: this.configService.get('AWS_ENDPOINT'),
     credentials: {
-      accessKeyId: this.configService.get('AWS_ACCESS_KEY'),
+      accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
     },
   });
