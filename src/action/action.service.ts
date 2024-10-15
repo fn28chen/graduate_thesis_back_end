@@ -19,8 +19,9 @@ export class ActionService {
 
   private readonly s3Client = new S3Client({
     region: this.configService.get('AWS_REGION'),
+    endpoint: this.configService.get('AWS_ENDPOINT'),
     credentials: {
-      accessKeyId: this.configService.get('AWS_ACCESS_KEY'),
+      accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
     },
   });
@@ -32,7 +33,7 @@ export class ActionService {
   ): Promise<PutObjectCommandOutput> {
     const uploadResponse = await this.s3Client.send(
       new PutObjectCommand({
-        Bucket: 'nestjs-uploader-indicloud',
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
         Key: `${user_id}/${fileName}`,
         Body: file,
         ACL: 'bucket-owner-full-control',
@@ -48,7 +49,7 @@ export class ActionService {
     try {
       const downloadResponse = await this.s3Client.send(
         new GetObjectCommand({
-          Bucket: 'nestjs-uploader-indicloud',
+          Bucket: this.configService.get('AWS_BUCKET_NAME'),
           Key: `${user_id}/${fileName}`,
         }),
       );
@@ -62,7 +63,7 @@ export class ActionService {
 
   async getPresignedUrl(user_id: string, fileName: string) {
     const params = {
-      Bucket: 'nestjs-uploader-indicloud',
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
       Key: `${user_id}/${fileName}`,
     };
 
@@ -78,7 +79,7 @@ export class ActionService {
   async delete(user_id: string, fileName: string) {
     const deleteResponse = await this.s3Client.send(
       new GetObjectCommand({
-        Bucket: 'nestjs-uploader-indicloud',
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
         Key: `${user_id}/${fileName}`,
       }),
     );
@@ -91,7 +92,7 @@ export class ActionService {
   async getFileFromUser(user_id: string) {
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
-        Bucket: 'nestjs-uploader-indicloud',
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
         Prefix: `${user_id}/`,
       }),
     );
@@ -101,7 +102,7 @@ export class ActionService {
     }
 
     const filesWithUrls = listObjects.Contents.map((file) => {
-      const url = `https://${'nestjs-uploader-indicloud'}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
+      const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
       return {
         ...file,
         url,
