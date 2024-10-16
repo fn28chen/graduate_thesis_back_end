@@ -13,6 +13,9 @@ import { ActionController } from './action/action.controller';
 import { ActionService } from './action/action.service';
 import { ActionModule } from './action/action.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import { SearchController } from './search/search.controller';
+import { SearchModule } from './search/search.module';
+import { SearchService } from './search/search.service';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
     UsersModule,
     KeyTokenModule,
     ActionModule,
+    SearchModule,
   ],
   providers: [
     AppService,
@@ -45,8 +49,9 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
       useClass: ZodValidationPipe,
     },
     ActionService,
+    SearchService,
   ],
-  controllers: [ActionController],
+  controllers: [ActionController, SearchController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

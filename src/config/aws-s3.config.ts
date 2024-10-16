@@ -1,16 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { S3Client } from '@aws-sdk/client-s3';
+import { ConfigService } from '@nestjs/config';
 
-@Injectable()
-export class awsS3Config {
-  constructor(private readonly configService: ConfigService) {}
-
-  private readonly s3Client = new S3Client({
-    region: this.configService.get('AWS_REGION'),
+export const createS3Client = (configService: ConfigService) => {
+  return new S3Client({
+    region: configService.get('AWS_REGION'),
+    endpoint: configService.get('AWS_ENDPOINT'),
     credentials: {
-      accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-      secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+      accessKeyId: configService.get('AWS_ACCESS_KEY_ID'),
+      secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
     },
   });
-}
+};

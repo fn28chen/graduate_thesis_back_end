@@ -11,20 +11,16 @@ import {
 import { Readable } from 'stream';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ApiTags } from '@nestjs/swagger';
+import { createS3Client } from 'src/config/aws-s3.config';
 
 @ApiTags('actions')
 @Injectable()
 export class ActionService {
-  constructor(private readonly configService: ConfigService) {}
+  private readonly s3Client: S3Client;
 
-  private readonly s3Client = new S3Client({
-    region: this.configService.get('AWS_REGION'),
-    endpoint: this.configService.get('AWS_ENDPOINT'),
-    credentials: {
-      accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-      secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
-    },
-  });
+  constructor(private configService: ConfigService) {
+    this.s3Client = createS3Client(this.configService);
+  }
 
   async upload(
     user_id: string,
