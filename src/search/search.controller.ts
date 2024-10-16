@@ -10,9 +10,15 @@ import { FileMetadata } from 'src/types/index';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
-  @Get()
+  @Get('/name')
   @UseGuards(JwtGuard)
-  async searchFiles(@Query('query') query: string): Promise<FileMetadata[]> {
+  async searchFilesByName(@Query('query') query: string): Promise<FileMetadata[]> {
     return this.searchService.searchFilesByName(query);
+  }
+
+  @Get('/extension')
+  @UseGuards(JwtGuard)
+  async searchFilesByExtension(@Query('query') query: string): Promise<FileMetadata[]> {
+    return this.searchService.searchFilesByExtension(query);
   }
 }

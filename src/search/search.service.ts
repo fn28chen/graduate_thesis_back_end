@@ -15,6 +15,10 @@ export class SearchService {
   }
 
   async searchFilesByName(query: string): Promise<FileMetadata[]> {
+    if (query.length < 3) {
+      throw new BadRequestException('Error: Not enough data to query');
+    }
+
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
@@ -40,4 +44,33 @@ export class SearchService {
     return fileMetadata;
   }
   
+  async searchFilesByExtension(query: string): Promise<FileMetadata[]> {
+    if (query.length < 3) {
+      throw new BadRequestException('Error: Not enough data to query');
+    }
+
+    const listObjects = await this.s3Client.send(
+      new ListObjectsCommand({
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      }),
+    );
+
+    // console.log("Current list: ", listObjects.Contents);
+    const files = listObjects.Contents;
+    // Filter files by query
+    const filteredFiles = files.filter((file) => file.Key.endsWith(query));
+    // Map files to FileMetadata
+    const fileMetadata = filteredFiles.map((file) => ({
+      Key: file.Key,
+      LastModified: file.LastModified.toISOString(),
+      ETag: file.ETag,
+      Size: file.Size,
+      StorageClass: file.StorageClass,
+      Owner: {
+        DisplayName: file.Owner.DisplayName,
+        ID: file.Owner.ID,
+      },
+    }));
+    return fileMetadata;
+  }
 }
