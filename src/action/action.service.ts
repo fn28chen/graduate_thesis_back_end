@@ -85,7 +85,7 @@ export class ActionService {
     }
   }
 
-  async getFileFromUser(user_id: string) {
+  async getFileFromUser(user_id: string, page: number, limit: number) {
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
@@ -97,6 +97,10 @@ export class ActionService {
       throw new BadRequestException('No files found for the user');
     }
 
+    // Tính toán chỉ số bắt đầu và kết thúc cho trang
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
     const filesWithUrls = listObjects.Contents.map((file) => {
       const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
       return {
@@ -105,6 +109,14 @@ export class ActionService {
       };
     });
 
-    return filesWithUrls;
+    // Cắt danh sách tệp theo trang
+    const paginatedFiles = filesWithUrls.slice(startIndex, endIndex);
+
+    return {
+      totalFiles: filesWithUrls.length,
+      page,
+      limit,
+      files: paginatedFiles,
+    };
   }
 }

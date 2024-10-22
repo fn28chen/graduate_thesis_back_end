@@ -1,5 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { S3Client, ListObjectsCommand } from '@aws-sdk/client-s3';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ListObjectsCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { createS3Client } from 'src/config/aws-s3.config';
@@ -16,7 +16,7 @@ export class SearchService {
 
   async searchFilesByName(query: string): Promise<FileMetadata[]> {
     if (query.length < 3) {
-      throw new BadRequestException('Error: Not enough data to query');
+      throw new BadRequestException('Error: Query too short');
     }
 
     const listObjects = await this.s3Client.send(
@@ -27,10 +27,13 @@ export class SearchService {
 
     // console.log("Current list: ", listObjects.Contents);
     const files = listObjects.Contents;
-    // Filter files by query
-    const filteredFiles = files.filter((file) => file.Key.includes(query));
+    // Filter files by query, case-insensitive
+    const lowerCaseQuery = query.toLowerCase();
+    const filteredFiles = files.filter((file) =>
+      file.Key.toLowerCase().includes(lowerCaseQuery),
+    );
     // Map files to FileMetadata
-    const fileMetadata = filteredFiles.map((file) => ({
+    return filteredFiles.map((file) => ({
       Key: file.Key,
       LastModified: file.LastModified.toISOString(),
       ETag: file.ETag,
@@ -41,12 +44,11 @@ export class SearchService {
         ID: file.Owner.ID,
       },
     }));
-    return fileMetadata;
   }
-  
+
   async searchFilesByExtension(query: string): Promise<FileMetadata[]> {
     if (query.length < 3) {
-      throw new BadRequestException('Error: Not enough data to query');
+      throw new BadRequestException('Error: Query too short');
     }
 
     const listObjects = await this.s3Client.send(
@@ -60,7 +62,7 @@ export class SearchService {
     // Filter files by query
     const filteredFiles = files.filter((file) => file.Key.endsWith(query));
     // Map files to FileMetadata
-    const fileMetadata = filteredFiles.map((file) => ({
+    return filteredFiles.map((file) => ({
       Key: file.Key,
       LastModified: file.LastModified.toISOString(),
       ETag: file.ETag,
@@ -71,6 +73,5 @@ export class SearchService {
         ID: file.Owner.ID,
       },
     }));
-    return fileMetadata;
   }
 }
