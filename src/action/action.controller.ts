@@ -5,6 +5,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -153,13 +154,19 @@ export class ActionController {
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
-  async listFiles(@Req() req) {
+  async listFiles(
+    @Req() req,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 50,
+  ) {
     const user_id = req.user['id'];
     console.log(
       '\x1b[33mReaching list controller\x1b[0m\n=========================================',
     );
     console.log('user_id:', user_id);
-    return this.actionService.getFileFromUser(user_id);
+    console.log('user_id:', user_id);
+    console.log('page:', page, 'limit:', limit);
+    return this.actionService.getFileFromUser(user_id, page, limit);
   }
 
   @Delete('delete/:fileName')
