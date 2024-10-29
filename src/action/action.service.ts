@@ -99,7 +99,9 @@ export class ActionService {
 
     // Tính toán chỉ số bắt đầu và kết thúc cho trang
     const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+    console.log('startIndex:', startIndex);
+    const endIndex = parseInt(String(startIndex)) + parseInt(String(limit));
+    console.log('endIndex:', endIndex);
 
     const filesWithUrls = listObjects.Contents.map((file) => {
       const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;

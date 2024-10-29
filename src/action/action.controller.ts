@@ -126,13 +126,12 @@ export class ActionController {
   @Get('download-presigned/:fileName')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Download a file with presigned link' })
-  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({ status: 200, description: 'Presigned URL successfully generated.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async downloadFileWithPresignedUrl(
     @Req() req,
     @Param('fileName') fileName: string,
-    @Res() res,
   ) {
     const user_id = req.user['id'];
     console.log(
@@ -145,7 +144,7 @@ export class ActionController {
       user_id,
       fileName,
     );
-    res.redirect(presignedUrl);
+    return presignedUrl;
   }
 
   @Get('list-me')
@@ -157,7 +156,7 @@ export class ActionController {
   async listFiles(
     @Req() req,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 50,
+    @Query('limit') limit: number = 15,
   ) {
     const user_id = req.user['id'];
     console.log(
