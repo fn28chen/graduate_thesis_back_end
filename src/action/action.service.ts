@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
+  DeleteBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   ListObjectsCommand,
   PutObjectCommand,
@@ -73,15 +75,22 @@ export class ActionService {
   }
 
   async delete(user_id: string, fileName: string) {
-    const deleteResponse = await this.s3Client.send(
-      new GetObjectCommand({
-        Bucket: this.configService.get('AWS_BUCKET_NAME'),
-        Key: `${user_id}/${fileName}`,
-      }),
-    );
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+    });
 
-    if (!deleteResponse) {
-      throw new BadRequestException('File not deleted');
+    try {
+      const deleteResponse = await this.s3Client.send(deleteCommand);
+      // Log success message
+      console.log('File deleted successfully:', deleteResponse);
+      return { message: 'File deleted successfully' }; // Optionally return a message
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error deleting file:', error);
+      throw new BadRequestException(
+        'Error when deleting file: ' + error.message,
+      );
     }
   }
 

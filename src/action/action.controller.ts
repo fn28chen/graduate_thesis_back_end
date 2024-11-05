@@ -170,6 +170,10 @@ export class ActionController {
 
   @Delete('delete/:fileName')
   @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Delete user file' })
+  @ApiResponse({ status: 200, description: 'File delete successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async deleteFile(@Req() req, @Param('fileName') fileName: string) {
     const user_id = req.user['id'];
     console.log(
