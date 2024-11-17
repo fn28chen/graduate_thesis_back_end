@@ -2,7 +2,6 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -20,7 +19,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeyTokenService } from 'src/key-token/key-token.service';
 import { LogoutDto } from './dto/logout.dto';
-import { STATUS_CODES } from 'http';
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -33,14 +36,14 @@ export class AuthService {
     private keyTokenService: KeyTokenService,
   ) {}
 
-  async createTokenPair(payload: any): Promise<any> {
+  async createTokenPair(payload: object): Promise<TokenResponse> {
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: '15m',
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
     });
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: '1d',
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
     });
 
     return { accessToken, refreshToken };
@@ -58,7 +61,7 @@ export class AuthService {
     });
   }
 
-  async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
+  async signUp(signUpDto: SignUpDto): Promise<{ token: TokenResponse; user: User }> {
     // Step 1: Check if the user already exists
     const userExists = await this.usersRepository.findOne({
       where: { email: signUpDto.email },
@@ -82,7 +85,7 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = newUser;
     console.log('Token: ', token);
     return { token, user: userWithoutPassword } as {
-      token: string;
+      token: TokenResponse;
       user: User;
     };
   }

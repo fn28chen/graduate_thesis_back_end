@@ -6,18 +6,18 @@ import {
   Post,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { User } from 'src/entities/user.entity';
-
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
 
+@ApiBearerAuth()
 @ApiTags('user')
 @Roles(Role.USER)
 @Controller('user')
@@ -48,7 +48,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard)
   async deleteById(@Param('id') id: string): Promise<User> {
-    const user = this.userService.deleteById(Number(id));
+    const user = await this.userService.deleteById(Number(id));
     return user;
   }
 }
