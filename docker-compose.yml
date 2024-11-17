@@ -4,10 +4,8 @@ services:
   postgres:
     container_name: postgres_container
     image: postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -18,19 +16,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      JWT_EXPIRES: ${JWT_EXPIRES}
-      ACCESS_TOKEN_EXPIRATION: ${ACCESS_TOKEN_EXPIRATION}
-      REFRESH_TOKEN_EXPIRATION: ${REFRESH_TOKEN_EXPIRATION}
-      REFRESH_JWT_EXPIRES: ${REFRESH_JWT_EXPIRES}
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     restart: always
