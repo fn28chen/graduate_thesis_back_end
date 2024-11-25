@@ -48,30 +48,7 @@ export class ActionController {
       },
     },
   })
-  @ApiResponse({
-    status: 200,
-    description: 'List of files',
-    schema: {
-      example: {
-        totalFiles: 23,
-        page: "1",
-        limit: "15",
-        files: [
-          {
-            Key: "1/0044.jpg",
-            LastModified: "2024-10-16T01:59:53.000Z",
-            ETag: "\"54fdb249148a24280933dccfa7aa2a3d\"",
-            Size: 18522,
-            StorageClass: "STANDARD",
-            Owner: {
-              DisplayName: "fcmunchen1901",
-              ID: "65a0e351fd469f98f44594b58af69e4926f96cf83ad27df166074ef1e21df321"
-            },
-            url: "https://nestjs-uploader-indicloud.s3.ap-southeast-1.amazonaws.com/1/0044.jpg"
-          }],
-        },
-    },
-  })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   @ApiBody({
@@ -173,7 +150,30 @@ export class ActionController {
   @Get('list-me')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get list file of current user' })
-  @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of files',
+    schema: {
+      example: {
+        totalFiles: 23,
+        page: "1",
+        limit: "15",
+        files: [
+          {
+            Key: "1/0044.jpg",
+            LastModified: "2024-10-16T01:59:53.000Z",
+            ETag: "\"54fdb249148a24280933dccfa7aa2a3d\"",
+            Size: 18522,
+            StorageClass: "STANDARD",
+            Owner: {
+              DisplayName: "fcmunchen1901",
+              ID: "65a0e351fd469f98f44594b58af69e4926f96cf83ad27df166074ef1e21df321"
+            },
+            url: "https://nestjs-uploader-indicloud.s3.ap-southeast-1.amazonaws.com/1/0044.jpg"
+          }],
+        },
+    },
+  })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'What the heck is goin on.' })
   async listFiles(
