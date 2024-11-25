@@ -84,7 +84,8 @@ export class ActionController {
     console.log('file name: ', file.originalname);
     console.log('file size: ', file.size);
     await this.actionService.upload(user_id, file.originalname, file.buffer);
-    return { message: 'File uploaded successfully' };
+    const result = await this.actionService.upload(user_id, file.originalname, file.buffer);
+    return { message: 'File uploaded successfully', result };
   }
 
   @Get('download/:fileName')

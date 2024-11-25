@@ -16,7 +16,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
-  await app.listen(8080);
+  await app.listen(process.env.PORT_LOCAL || 8080);
 
   if (module.hot) {
     module.hot.accept();
