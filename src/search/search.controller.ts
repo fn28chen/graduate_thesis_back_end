@@ -1,8 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SearchService } from './search.service';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { FileMetadata } from 'src/types/index';
+import { statusCodes } from 'src/types/statusCodes';
+import { reasonPhrases } from 'src/types/reasonPhrases';
 
 @ApiBearerAuth()
 @ApiTags('search')
@@ -12,13 +14,65 @@ export class SearchController {
 
   @Get('/name')
   @UseGuards(JwtGuard)
-  async searchFilesByName(@Query('query') query: string): Promise<FileMetadata[]> {
+  @ApiResponse({
+    status: statusCodes.OK,
+    description: reasonPhrases.OK,
+    example: [
+      {
+        Key: '1/qinshhihuang.jpg',
+        LastModified: '2024-11-26T15:23:37.000Z',
+        ETag: '"c8c8fa420db82c46342f06acb620b5d4"',
+        Size: 977973,
+        StorageClass: 'STANDARD',
+        Owner: {
+          DisplayName: 'webfile',
+          ID: '75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a',
+        },
+      },
+    ],
+  })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async searchFilesByName(
+    @Query('query') query: string,
+  ): Promise<FileMetadata[]> {
     return this.searchService.searchFilesByName(query);
   }
 
   @Get('/extension')
   @UseGuards(JwtGuard)
-  async searchFilesByExtension(@Query('query') query: string): Promise<FileMetadata[]> {
+  @ApiResponse({
+    status: statusCodes.OK,
+    description: reasonPhrases.OK,
+    example: [
+      {
+        Key: '1/qinshhihuang.jpg',
+        LastModified: '2024-11-26T15:23:37.000Z',
+        ETag: '"c8c8fa420db82c46342f06acb620b5d4"',
+        Size: 977973,
+        StorageClass: 'STANDARD',
+        Owner: {
+          DisplayName: 'webfile',
+          ID: '75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a',
+        },
+      },
+    ],
+  })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async searchFilesByExtension(
+    @Query('query') query: string,
+  ): Promise<FileMetadata[]> {
     return this.searchService.searchFilesByExtension(query);
   }
 }

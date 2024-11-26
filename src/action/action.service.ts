@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
-  DeleteBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   ListObjectsCommand,
@@ -38,25 +37,12 @@ export class ActionService {
       }),
     );
     if (!uploadResponse) {
-      throw new BadRequestException('File not uploaded');
+      throw new BadRequestException({
+        statusCode: 400,
+        message: 'Error when uploading file',
+      });
     }
     return uploadResponse;
-  }
-
-  async download(user_id: string, fileName: string) {
-    try {
-      const downloadResponse = await this.s3Client.send(
-        new GetObjectCommand({
-          Bucket: this.configService.get('AWS_BUCKET_NAME'),
-          Key: `${user_id}/${fileName}`,
-        }),
-      );
-      // console.log(typeof downloadResponse.Body);
-      // return downloadResponse.Body;
-      return downloadResponse.Body as Readable;
-    } catch (error) {
-      throw new BadRequestException('Error when downloading file:', error);
-    }
   }
 
   async getPresignedUrl(user_id: string, fileName: string) {
@@ -103,7 +89,12 @@ export class ActionService {
     );
 
     if (!listObjects.Contents) {
-      throw new BadRequestException('No files found for the user');
+      return {
+      totalFiles: 0,
+      page,
+      limit,
+      files: [],
+      };
     }
 
     // Tính toán chỉ số bắt đầu và kết thúc cho trang

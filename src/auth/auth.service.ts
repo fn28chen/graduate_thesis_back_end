@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import {
   BadRequestException,
   Injectable,
+  NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -67,7 +68,7 @@ export class AuthService {
       where: { email: signUpDto.email },
     });
     if (userExists) {
-      throw new BadRequestException('Error: User already exists!');
+      throw new BadRequestException({statusCode: 400, message: 'Error: User already exists!'});
     }
 
     // Step 2: Hash the password
@@ -101,14 +102,20 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException({
+      statusCode: 401,
+      message: 'User not found',
+      });
     }
 
     // Step 2: Compare the password from login and the password from the database
     const isPasswordMatched = await argon2.verify(user.password, password);
     console.log('Password match:', isPasswordMatched);
     if (!isPasswordMatched) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotAcceptableException({
+        statusCode: 406,
+        message: 'Wrong password',
+        });
     }
 
     // Step 3: Create a token pair and save the refresh token to the database
