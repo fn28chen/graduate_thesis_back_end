@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SearchService } from './search.service';
 import { JwtGuard } from 'src/guards/jwt.guard';
@@ -39,9 +39,11 @@ export class SearchController {
     },
   })
   async searchFilesByName(
+        @Req() req,
     @Query('query') query: string,
   ): Promise<FileMetadata[]> {
-    return this.searchService.searchFilesByName(query);
+    const user_id = req.user['id'];
+    return this.searchService.searchFilesByName(user_id, query);
   }
 
   @Get('/extension')
@@ -71,8 +73,10 @@ export class SearchController {
     },
   })
   async searchFilesByExtension(
+    @Req() req,
     @Query('query') query: string,
   ): Promise<FileMetadata[]> {
-    return this.searchService.searchFilesByExtension(query);
+    const user_id = req.user['id'];
+    return this.searchService.searchFilesByExtension(user_id, query);
   }
 }

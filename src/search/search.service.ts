@@ -14,13 +14,14 @@ export class SearchService {
     this.s3Client = createS3Client(this.configService);
   }
 
-  async searchFilesByName(query: string): Promise<FileMetadata[]> {
+  async searchFilesByName(user_id: string, query: string): Promise<FileMetadata[]> {
     if (query.length < 3) {
       throw new BadRequestException('Error: Query too short');
     }
 
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
+        Prefix: `${user_id}/`,
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
       }),
     );
@@ -46,13 +47,14 @@ export class SearchService {
     }));
   }
 
-  async searchFilesByExtension(query: string): Promise<FileMetadata[]> {
+  async searchFilesByExtension(user_id: string, query: string): Promise<FileMetadata[]> {
     if (query.length < 3) {
       throw new BadRequestException('Error: Query too short');
     }
 
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
+        Prefix: `${user_id}/`,
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
       }),
     );
