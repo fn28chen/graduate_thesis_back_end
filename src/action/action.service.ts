@@ -32,7 +32,7 @@ export class ActionService {
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
         Key: `${user_id}/${fileName}`,
         Body: file,
-        ACL: 'bucket-owner-full-control',
+        ACL: 'public-read-write',
       }),
     );
     if (!uploadResponse) {

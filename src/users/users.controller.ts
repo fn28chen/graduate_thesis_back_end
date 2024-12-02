@@ -24,6 +24,13 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  
+  @Get("/me")
+  @UseGuards(JwtGuard)
+  async getMe(@Req() req): Promise<User> {
+    return this.userService.getMe(req.user.id);
+  }
+
   @Get()
   @UseGuards(JwtGuard)
   async getAllUsers(): Promise<User[]> {

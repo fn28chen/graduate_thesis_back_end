@@ -26,14 +26,12 @@ export class SearchService {
       }),
     );
 
-    // console.log("Current list: ", listObjects.Contents);
     const files = listObjects.Contents;
-    // Filter files by query, case-insensitive
     const lowerCaseQuery = query.toLowerCase();
     const filteredFiles = files.filter((file) =>
       file.Key.toLowerCase().includes(lowerCaseQuery),
     );
-    // Map files to FileMetadata
+
     return filteredFiles.map((file) => ({
       Key: file.Key,
       LastModified: file.LastModified.toISOString(),
@@ -44,6 +42,7 @@ export class SearchService {
         DisplayName: file.Owner.DisplayName,
         ID: file.Owner.ID,
       },
+      url: `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.amazonaws.com/${file.Key}`,
     }));
   }
 
@@ -59,11 +58,9 @@ export class SearchService {
       }),
     );
 
-    // console.log("Current list: ", listObjects.Contents);
     const files = listObjects.Contents;
-    // Filter files by query
     const filteredFiles = files.filter((file) => file.Key.endsWith(query));
-    // Map files to FileMetadata
+
     return filteredFiles.map((file) => ({
       Key: file.Key,
       LastModified: file.LastModified.toISOString(),
@@ -74,6 +71,7 @@ export class SearchService {
         DisplayName: file.Owner.DisplayName,
         ID: file.Owner.ID,
       },
+      url: `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.amazonaws.com/${file.Key}`,
     }));
   }
 }

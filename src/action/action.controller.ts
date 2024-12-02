@@ -151,7 +151,7 @@ export class ActionController {
       user_id,
       fileName,
     );
-    return { message: 'File uploaded successfully', presignedUrl };
+    return presignedUrl;
   }
 
   @Get('list-me')
