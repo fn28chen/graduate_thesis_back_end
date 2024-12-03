@@ -64,16 +64,22 @@ export class UsersService {
     };
 
     const extensions = ['jpg', 'jpeg', 'png'];
+    let found = false;
     for (const ext of extensions) {
       params.Key = `Avatar/${userId}/avatar.${ext}`;
       try {
         await this.s3Client.send(new GetObjectCommand(params));
+        found = true;
         break;
       } catch (error) {
         if (error.name !== 'NoSuchKey') {
           throw error;
         }
       }
+    }
+
+    if (!found) {
+      return null;
     }
 
     const command = new GetObjectCommand(params);

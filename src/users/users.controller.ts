@@ -30,7 +30,7 @@ import { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import * as jwt from 'jsonwebtoken';
 @ApiBearerAuth()
 @ApiTags('user')
 @Roles(Role.USER)
@@ -38,12 +38,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Get('/me')
+  @Get('/profile')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get profile of current user' })
+  @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: 200,
-    description: 'User profile',
+    description: 'Current user profile',
     schema: {
       example: {
         id: 1,
@@ -51,10 +51,7 @@ export class UsersController {
         email: 'phong123@gmail.com',
         avatarUrl: null,
         createdAt: '2024-10-02T16:15:24.655Z',
-        password:
-          '$argon2id$v=19$m=65536,t=3,p=4$cyX9OjHRDtMaVx1pqUS2QA$N+sZNFl3J53eFejfpMfukWsgeUAPAhVgyiH1WRqymLY',
         role: 'USER',
-        hashedRefreshToken: null,
       },
     },
   })
@@ -65,8 +62,17 @@ export class UsersController {
       message: 'Unauthorized',
     },
   })
-  async getMe(@Req() req): Promise<User> {
-    return this.userService.getMe(req.user.id);
+  async getCurrentUserProfile(@Req() req): Promise<User> {
+
+    // Step 1: Get JWT token from request header
+    const authHeader = req.headers['authorization'];
+
+    // Step 2: Decode JWT token
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
+
+    // Step 3: Get user profile
+    return this.userService.getMe(decoded.id);
   }
 
   @Get()
@@ -91,7 +97,7 @@ export class UsersController {
 
   @Post('/me/avatar')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Upload a file' })
+  @ApiOperation({ summary: 'Upload avatar' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

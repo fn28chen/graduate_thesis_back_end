@@ -51,11 +51,15 @@ export class ActionService {
       Key: `${user_id}/${fileName}`,
     };
 
-    const command = new GetObjectCommand(params);
+    const getPresignedUrlCommand = new GetObjectCommand(params);
     const seconds = 60 * 30;
-    const presignedUrl = await getSignedUrl(this.s3Client as any, command, {
-      expiresIn: seconds,
-    });
+    const presignedUrl = await getSignedUrl(
+      this.s3Client as any,
+      getPresignedUrlCommand,
+      {
+        expiresIn: seconds,
+      },
+    );
     console.log('Presigned URL is: ', presignedUrl);
     return presignedUrl;
   }
@@ -93,6 +97,35 @@ export class ActionService {
     }
   }
 
+  async getTrash(user_id: string) {
+    const getTrashCommand = await this.s3Client.send(
+      new ListObjectsCommand({
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
+        Prefix: `trash/${user_id}/`,
+      }),
+    );
+
+    if (!getTrashCommand.Contents) {
+      return {
+        totalFiles: 0,
+        files: [],
+      };
+    }
+
+    const filesWithUrls = getTrashCommand.Contents.map((file) => {
+      const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
+      return {
+        ...file,
+        url,
+      };
+    });
+
+    return {
+      totalFiles: filesWithUrls.length,
+      files: filesWithUrls,
+    };
+  }
+
   async delete(user_id: string, fileName: string) {
     const deleteCommand = new DeleteObjectCommand({
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
@@ -123,10 +156,10 @@ export class ActionService {
 
     if (!listObjects.Contents) {
       return {
-      totalFiles: 0,
-      page,
-      limit,
-      files: [],
+        totalFiles: 0,
+        page,
+        limit,
+        files: [],
       };
     }
 
