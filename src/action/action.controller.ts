@@ -14,9 +14,6 @@ import {
 } from '@nestjs/common';
 import { ActionService } from './action.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { createWriteStream } from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -199,6 +196,17 @@ export class ActionController {
       '\x1b[33mReaching list controller\x1b[0m\n=========================================',
     );
     return this.actionService.getFileFromUser(user_id, page, limit);
+  }
+
+  @Post('move-to-trash')
+  @UseGuards(JwtGuard)
+  async moveToTrash(@Req() req, @Param('fileName') fileName: string) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching move-to-trash controller\x1b[0m\n=========================================',
+    );
+    await this.actionService.moveToTrashFolder(user_id, fileName);
+    return { message: 'File moved to trash successfully' };
   }
 
   @Delete('delete/:fileName')

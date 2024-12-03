@@ -8,7 +8,11 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { createS3Client } from 'src/config/aws-s3.config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -23,7 +27,6 @@ export class UsersService {
   ) {
     this.s3Client = createS3Client(this.configService);
   }
-
 
   async updateHashedRefreshToken(userId: number, hashedRefreshToken: string) {
     return await this.usersRepository.update(
@@ -57,7 +60,20 @@ export class UsersService {
   async getAvatarMe(userId: number) {
     const params = {
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      Key: `Avatar/${userId}/avatar.jpg`,
+      Key: `Avatar/${userId}/avatar`,
+    };
+
+    const extensions = ['jpg', 'jpeg', 'png'];
+    for (const ext of extensions) {
+      params.Key = `Avatar/${userId}/avatar.${ext}`;
+      try {
+        await this.s3Client.send(new GetObjectCommand(params));
+        break;
+      } catch (error) {
+        if (error.name !== 'NoSuchKey') {
+          throw error;
+        }
+      }
     }
 
     const command = new GetObjectCommand(params);
