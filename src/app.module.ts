@@ -20,7 +20,7 @@ import { SearchService } from './search/search.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '.env.development.local',
       validationSchema: Joi.object({
         POSTGRES_HOST: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),

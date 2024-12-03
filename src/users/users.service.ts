@@ -8,9 +8,10 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { createS3Client } from 'src/config/aws-s3.config';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class UsersService {
@@ -53,6 +54,21 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
+  async getAvatarMe(userId: number) {
+    const params = {
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `Avatar/${userId}/avatar.jpg`,
+    }
+
+    const command = new GetObjectCommand(params);
+    const seconds = 60 * 30;
+    const presignedUrl = await getSignedUrl(this.s3Client as any, command, {
+      expiresIn: seconds,
+    });
+    console.log('Presigned URL is: ', presignedUrl);
+    return presignedUrl;
+  }
+
   async getMe(userId: number) {
     const user = await this.usersRepository.findOne({
       where: {
@@ -60,18 +76,21 @@ export class UsersService {
       },
     });
     if (user) {
-      return user;
+      const avatarUrl = await this.getAvatarMe(userId);
+      return { ...user, avatarUrl };
     }
     throw new NotFoundException('Could not find the user');
   }
 
-  async uploadAvatar(userId: number, file: Buffer, fileName: string) {
+  async uploadAvatar(userId: number, file: Buffer, originalFileName: string) {
+    const fileExtension = originalFileName.split('.').pop();
+    const avatarFileName = `avatar.${fileExtension}`;
     const uploadResponse = await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
-        Key: `Avatar/${userId}/${fileName}`,
+        Key: `Avatar/${userId}/${avatarFileName}`,
         Body: file,
-        ACL: 'bucket-owner-full-control',
+        ACL: 'public-read-write',
       }),
     );
     if (!uploadResponse) {
