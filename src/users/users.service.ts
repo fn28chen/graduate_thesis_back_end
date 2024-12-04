@@ -57,7 +57,26 @@ export class UsersService {
   async getAvatarMe(userId: number) {
     const params = {
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      Key: `Avatar/${userId}/avatar.jpg`,
+      Key: `Avatar/${userId}/avatar`,
+    };
+
+    const extensions = ['jpg', 'jpeg', 'png'];
+    let found = false;
+    for (const ext of extensions) {
+      params.Key = `Avatar/${userId}/avatar.${ext}`;
+      try {
+        await this.s3Client.send(new GetObjectCommand(params));
+        found = true;
+        break;
+      } catch (error) {
+        if (error.name !== 'NoSuchKey') {
+          throw error;
+        }
+      }
+    }
+
+    if (!found) {
+      return null;
     }
 
     const command = new GetObjectCommand(params);
@@ -77,7 +96,8 @@ export class UsersService {
     });
     if (user) {
       const avatarUrl = await this.getAvatarMe(userId);
-      return { ...user, avatarUrl };
+      const { password, ...userWithoutPassword } = user;
+      return { ...userWithoutPassword, avatarUrl };
     }
     throw new NotFoundException('Could not find the user');
   }

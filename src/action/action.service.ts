@@ -51,11 +51,15 @@ export class ActionService {
       Key: `${user_id}/${fileName}`,
     };
 
-    const command = new GetObjectCommand(params);
+    const getPresignedUrlCommand = new GetObjectCommand(params);
     const seconds = 60 * 30;
-    const presignedUrl = await getSignedUrl(this.s3Client as any, command, {
-      expiresIn: seconds,
-    });
+    const presignedUrl = await getSignedUrl(
+      this.s3Client as any,
+      getPresignedUrlCommand,
+      {
+        expiresIn: seconds,
+      },
+    );
     console.log('Presigned URL is: ', presignedUrl);
     return presignedUrl;
   }
@@ -67,10 +71,20 @@ export class ActionService {
       CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/${user_id}/${fileName}`,
     });
 
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+    });
+
     try {
       const copyResponse = await this.s3Client.send(copyCommand);
       // Log success message
       console.log('File moved to trash successfully:', copyResponse);
+
+      const deleteResponse = await this.s3Client.send(deleteCommand);
+      // Log success message
+      console.log('File deleted successfully:', deleteResponse);
+
       return { message: 'File moved to trash successfully' }; // Optionally return a message
     } catch (error) {
       // Log the error for debugging
@@ -81,10 +95,70 @@ export class ActionService {
     }
   }
 
+  async getTrash(user_id: string) {
+    const getTrashCommand = await this.s3Client.send(
+      new ListObjectsCommand({
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
+        Prefix: `trash/${user_id}/`,
+      }),
+    );
+
+    if (!getTrashCommand.Contents) {
+      return {
+        totalFiles: 0,
+        files: [],
+      };
+    }
+
+    const filesWithUrls = getTrashCommand.Contents.map((file) => {
+      const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
+      return {
+        ...file,
+        url,
+      };
+    });
+
+    return {
+      totalFiles: filesWithUrls.length,
+      files: filesWithUrls,
+    };
+  }
+
+  async restoreFileFromTrash(user_id: string, fileName: string) {
+    const copyCommand = new CopyObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+      CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/trash/${user_id}/${fileName}`,
+    });
+
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `trash/${user_id}/${fileName}`,
+    });
+
+    try {
+      const copyResponse = await this.s3Client.send(copyCommand);
+      // Log success message
+      console.log('File restored successfully:', copyResponse);
+
+      const deleteResponse = await this.s3Client.send(deleteCommand);
+      // Log success message
+      console.log('File deleted from trash successfully:', deleteResponse);
+
+      return { message: 'File restored successfully' }; // Optionally return a message
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error restoring file:', error);
+      throw new BadRequestException(
+        'Error when restoring file: ' + error.message,
+      );
+    }
+  }
+
   async delete(user_id: string, fileName: string) {
     const deleteCommand = new DeleteObjectCommand({
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      Key: `${user_id}/${fileName}`,
+      Key: `trash/${user_id}/${fileName}`,
     });
 
     try {

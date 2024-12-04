@@ -40,12 +40,13 @@ import { AuthGuard } from 'src/guards/auth.guard';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+
   @Get('/me')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get profile of current user' })
   @ApiResponse({
     status: 200,
-    description: 'User profile',
+    description: 'Current user profile',
     schema: {
       example: {
         id: 1,
@@ -53,10 +54,7 @@ export class UsersController {
         email: 'phong123@gmail.com',
         avatarUrl: null,
         createdAt: '2024-10-02T16:15:24.655Z',
-        password:
-          '$argon2id$v=19$m=65536,t=3,p=4$cyX9OjHRDtMaVx1pqUS2QA$N+sZNFl3J53eFejfpMfukWsgeUAPAhVgyiH1WRqymLY',
         role: 'USER',
-        hashedRefreshToken: null,
       },
     },
   })
@@ -93,6 +91,7 @@ export class UsersController {
   }
 
   @Post('/me/avatar')
+
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Upload a file' })
   @ApiConsumes('multipart/form-data')

@@ -119,6 +119,7 @@ export class AuthService {
     }
 
     // Step 3: Create a token pair and save the refresh token to the database
+    console.log('User: ', user);
     const tokens = await this.createTokenPair({ id: user.id });
     const { password: _, ...userWithoutPassword } = user;
     console.log('Token: ', tokens);

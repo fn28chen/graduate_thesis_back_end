@@ -29,8 +29,6 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { JwtService } from '@nestjs/jwt';
-import { KeyTokenService } from 'src/key-token/key-token.service';
 
 @ApiBearerAuth()
 @ApiTags('action')
@@ -82,6 +80,7 @@ export class ActionController {
     @Query('limit') limit?: number,
   ) {
     const user_id = req.user['id'];
+    console.log(user_id);
     console.log(
       '\x1b[33mReaching list controller\x1b[0m\n=========================================',
     );
@@ -207,8 +206,22 @@ export class ActionController {
     return presignedUrl;
   }
 
-  @Post('move-to-trash')
-  @UseGuards(AuthGuard)
+  @Post('move-to-trash/:fileName')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Delete user file' })
+  @ApiResponse({
+    status: 200,
+    description: 'File move to trash successfully.',
+    example: { message: 'File move to trash successfully' },
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
   async moveToTrash(@Req() req, @Param('fileName') fileName: string) {
     const user_id = req.user['id'];
     console.log(
@@ -217,6 +230,56 @@ export class ActionController {
     await this.actionService.moveToTrashFolder(user_id, fileName);
     return { message: 'File moved to trash successfully' };
   }
+
+  @Get('trash')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Get user trash folder' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get trash folder successfully.',
+    example: { message: 'Get trash folder successfully' },
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async getTrash(@Req() req) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching get-trash controller\x1b[0m\n=========================================',
+    );
+    return await this.actionService.getTrash(user_id);
+  }
+
+  @Post('restore-file/:fileName')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Restore user file' })
+  @ApiResponse({
+    status: 200,
+    description: 'File move to trash successfully.',
+    example: { message: 'File move to trash successfully' },
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async restoreFile(@Req() req, @Param('fileName') fileName: string) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching move-to-trash controller\x1b[0m\n=========================================',
+    );
+    await this.actionService.restoreFileFromTrash(user_id, fileName);
+    return { message: 'File restored successfully' };
+  }
+
 
   @Delete('delete/:fileName')
   @UseGuards(AuthGuard)
