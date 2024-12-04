@@ -8,11 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { createS3Client } from 'src/config/aws-s3.config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -27,6 +23,7 @@ export class UsersService {
   ) {
     this.s3Client = createS3Client(this.configService);
   }
+
 
   async updateHashedRefreshToken(userId: number, hashedRefreshToken: string) {
     return await this.usersRepository.update(

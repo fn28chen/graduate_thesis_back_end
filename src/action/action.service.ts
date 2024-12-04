@@ -65,28 +65,16 @@ export class ActionService {
   }
 
   async moveToTrashFolder(user_id: string, fileName: string) {
-    // Step 1: Copy the file to the trash folder
     const copyCommand = new CopyObjectCommand({
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/${user_id}/${fileName}`,
       Key: `trash/${user_id}/${fileName}`,
+      CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/${user_id}/${fileName}`,
     });
 
-    // Step 2: Delete the original file
-    const deleteCommand = new DeleteObjectCommand({
-      Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      Key: `${user_id}/${fileName}`,
-    });
-
-    // Step 3: Execute the sequence of commands
     try {
       const copyResponse = await this.s3Client.send(copyCommand);
       // Log success message
-      console.log('File copied to trash successfully:', copyResponse);
-      // Step 4: Delete the original file
-      const deleteResponse = await this.s3Client.send(deleteCommand);
-      // Log success message
-      console.log('File deleted successfully:', deleteResponse);
+      console.log('File moved to trash successfully:', copyResponse);
       return { message: 'File moved to trash successfully' }; // Optionally return a message
     } catch (error) {
       // Log the error for debugging

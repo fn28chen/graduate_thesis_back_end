@@ -39,11 +39,11 @@ export class AuthService {
 
   async createTokenPair(payload: object): Promise<TokenResponse> {
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
+      secret: process.env.JWT_SECRET,
       expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
     });
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
     });
 
@@ -137,7 +137,7 @@ export class AuthService {
 
   async validateRefreshToken(userId: number, refreshToken: string) {
     const user = await this.usersService.findOne(userId);
-    if (!user || !user.hashedRefreshToken)
+    if (!user)
       throw new UnauthorizedException('Invalid Refresh Token');
 
     const refreshTokenMatches = await argon2.verify(

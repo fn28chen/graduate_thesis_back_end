@@ -16,6 +16,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { SearchController } from './search/search.controller';
 import { SearchModule } from './search/search.module';
 import { SearchService } from './search/search.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { SearchService } from './search/search.service';
     },
     ActionService,
     SearchService,
+    JwtService
   ],
   controllers: [ActionController, SearchController],
 })

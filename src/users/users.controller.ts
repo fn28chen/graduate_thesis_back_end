@@ -30,7 +30,9 @@ import { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as jwt from 'jsonwebtoken';
+import { UserDto } from './dto/user.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
+
 @ApiBearerAuth()
 @ApiTags('user')
 @Roles(Role.USER)
@@ -38,9 +40,10 @@ import * as jwt from 'jsonwebtoken';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Get('/profile')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get current user profile' })
+
+  @Get('/me')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get profile of current user' })
   @ApiResponse({
     status: 200,
     description: 'Current user profile',
@@ -62,42 +65,35 @@ export class UsersController {
       message: 'Unauthorized',
     },
   })
-  async getCurrentUserProfile(@Req() req): Promise<User> {
-
-    // Step 1: Get JWT token from request header
-    const authHeader = req.headers['authorization'];
-
-    // Step 2: Decode JWT token
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
-
-    // Step 3: Get user profile
-    return this.userService.getMe(decoded.id);
+  async getMe(@Req() req): Promise<UserDto> {
+    console.log('req.user:', req.user);
+    return this.userService.getMe(req.user.id);
   }
 
   @Get()
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   async getAllUsers(): Promise<User[]> {
     const users = await this.userService.getAllUsers();
     return users;
   }
 
   @Get(':id')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   async getUserById(@Param('id') id: string): Promise<User> {
     const user = await this.userService.findOne(Number(id));
     return user;
   }
 
   @Post()
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Post('/me/avatar')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Upload avatar' })
+
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Upload a file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -169,7 +165,7 @@ export class UsersController {
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   async deleteById(@Param('id') id: string): Promise<User> {
     const user = await this.userService.deleteById(Number(id));
     return user;

@@ -14,6 +14,9 @@ import {
 } from '@nestjs/common';
 import { ActionService } from './action.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { createWriteStream } from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,15 +28,21 @@ import {
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { KeyTokenService } from 'src/key-token/key-token.service';
 
 @ApiBearerAuth()
 @ApiTags('action')
 @Controller('action')
 export class ActionController {
-  constructor(private readonly actionService: ActionService) {}
+  constructor(
+    private readonly actionService: ActionService,
+    
+  ) {}
 
   @Get('list-me')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get list file of current user' })
   @ApiResponse({
     status: 200,
@@ -80,7 +89,7 @@ export class ActionController {
   }
 
   @Post('upload')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Upload a file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -158,7 +167,7 @@ export class ActionController {
   }
 
   @Get('download-presigned/:fileName')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Download a file with presigned link' })
   @ApiResponse({
     status: statusCodes.OK,
@@ -216,7 +225,6 @@ export class ActionController {
   })
   async moveToTrash(@Req() req, @Param('fileName') fileName: string) {
     const user_id = req.user['id'];
-    console.log(fileName);
     console.log(
       '\x1b[33mReaching move-to-trash controller\x1b[0m\n=========================================',
     );
@@ -250,7 +258,7 @@ export class ActionController {
 
 
   @Delete('delete/:fileName')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Delete user file' })
   @ApiResponse({
     status: 200,
