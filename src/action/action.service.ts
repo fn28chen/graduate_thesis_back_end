@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   ListObjectsCommand,
@@ -57,6 +58,27 @@ export class ActionService {
     });
     console.log('Presigned URL is: ', presignedUrl);
     return presignedUrl;
+  }
+
+  async moveToTrashFolder(user_id: string, fileName: string) {
+    const copyCommand = new CopyObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `trash/${user_id}/${fileName}`,
+      CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/${user_id}/${fileName}`,
+    });
+
+    try {
+      const copyResponse = await this.s3Client.send(copyCommand);
+      // Log success message
+      console.log('File moved to trash successfully:', copyResponse);
+      return { message: 'File moved to trash successfully' }; // Optionally return a message
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error moving file to trash:', error);
+      throw new BadRequestException(
+        'Error when moving file to trash: ' + error.message,
+      );
+    }
   }
 
   async delete(user_id: string, fileName: string) {
