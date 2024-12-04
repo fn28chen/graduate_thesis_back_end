@@ -16,11 +16,12 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { SearchController } from './search/search.controller';
 import { SearchModule } from './search/search.module';
 import { SearchService } from './search/search.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env.development.local',
+      envFilePath: '.env',
       validationSchema: Joi.object({
         POSTGRES_HOST: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),
@@ -50,6 +51,7 @@ import { SearchService } from './search/search.service';
     },
     ActionService,
     SearchService,
+    JwtService
   ],
   controllers: [ActionController, SearchController],
 })

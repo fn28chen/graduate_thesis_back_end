@@ -111,10 +111,10 @@ export class ActionService {
 
     if (!listObjects.Contents) {
       return {
-      totalFiles: 0,
-      page,
-      limit,
-      files: [],
+        totalFiles: 0,
+        page,
+        limit,
+        files: [],
       };
     }
 
