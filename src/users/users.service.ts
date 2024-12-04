@@ -96,7 +96,8 @@ export class UsersService {
     });
     if (user) {
       const avatarUrl = await this.getAvatarMe(userId);
-      return { ...user, avatarUrl };
+      const { password, ...userWithoutPassword } = user;
+      return { ...userWithoutPassword, avatarUrl };
     }
     throw new NotFoundException('Could not find the user');
   }

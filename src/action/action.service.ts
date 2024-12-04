@@ -71,10 +71,20 @@ export class ActionService {
       CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/${user_id}/${fileName}`,
     });
 
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+    });
+
     try {
       const copyResponse = await this.s3Client.send(copyCommand);
       // Log success message
       console.log('File moved to trash successfully:', copyResponse);
+
+      const deleteResponse = await this.s3Client.send(deleteCommand);
+      // Log success message
+      console.log('File deleted successfully:', deleteResponse);
+
       return { message: 'File moved to trash successfully' }; // Optionally return a message
     } catch (error) {
       // Log the error for debugging
@@ -114,10 +124,41 @@ export class ActionService {
     };
   }
 
+  async restoreFileFromTrash(user_id: string, fileName: string) {
+    const copyCommand = new CopyObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+      CopySource: `${this.configService.get('AWS_BUCKET_NAME')}/trash/${user_id}/${fileName}`,
+    });
+
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `trash/${user_id}/${fileName}`,
+    });
+
+    try {
+      const copyResponse = await this.s3Client.send(copyCommand);
+      // Log success message
+      console.log('File restored successfully:', copyResponse);
+
+      const deleteResponse = await this.s3Client.send(deleteCommand);
+      // Log success message
+      console.log('File deleted from trash successfully:', deleteResponse);
+
+      return { message: 'File restored successfully' }; // Optionally return a message
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error restoring file:', error);
+      throw new BadRequestException(
+        'Error when restoring file: ' + error.message,
+      );
+    }
+  }
+
   async delete(user_id: string, fileName: string) {
     const deleteCommand = new DeleteObjectCommand({
       Bucket: this.configService.get('AWS_BUCKET_NAME'),
-      Key: `${user_id}/${fileName}`,
+      Key: `trash/${user_id}/${fileName}`,
     });
 
     try {
