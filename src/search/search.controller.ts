@@ -5,6 +5,7 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 import { FileMetadata } from 'src/types/index';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('search')
@@ -13,7 +14,7 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get('/name')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiResponse({
     status: statusCodes.OK,
     description: reasonPhrases.OK,
@@ -47,7 +48,7 @@ export class SearchController {
   }
 
   @Get('/extension')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiResponse({
     status: statusCodes.OK,
     description: reasonPhrases.OK,

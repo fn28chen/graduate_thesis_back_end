@@ -25,7 +25,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtGuard } from 'src/guards/jwt.guard';
 import { statusCodes } from 'src/types/statusCodes';
 import { reasonPhrases } from 'src/types/reasonPhrases';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -207,7 +206,7 @@ export class ActionController {
   }
 
   @Post('move-to-trash/:fileName')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Delete user file' })
   @ApiResponse({
     status: 200,
@@ -232,7 +231,7 @@ export class ActionController {
   }
 
   @Get('trash')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get user trash folder' })
   @ApiResponse({
     status: 200,
@@ -256,7 +255,7 @@ export class ActionController {
   }
 
   @Post('restore-file/:fileName')
-  @UseGuards(JwtGuard)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Restore user file' })
   @ApiResponse({
     status: 200,
