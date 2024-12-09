@@ -7,8 +7,6 @@ export class LoggerMiddleware implements NestMiddleware {
   constructor(private readonly jwtService: JwtService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    console.log('Request...');
-    // Step 1: Give token
     const authHeader = req.headers.authorization;
 
     if (authHeader) {

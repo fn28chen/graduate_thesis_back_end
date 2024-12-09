@@ -66,20 +66,19 @@ export class UsersController {
     },
   })
   async getMe(@Req() req): Promise<UserDto> {
-    console.log('req.user:', req.user);
     return this.userService.getMe(req.user.id);
   }
 
   @Get()
   @UseGuards(AuthGuard)
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<UserDto[]> {
     const users = await this.userService.getAllUsers();
     return users;
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  async getUserById(@Param('id') id: string): Promise<User> {
+  async getUserById(@Param('id') id: string): Promise<UserDto> {
     const user = await this.userService.findOne(Number(id));
     return user;
   }
@@ -153,9 +152,6 @@ export class UsersController {
     file: Express.Multer.File,
   ): Promise<PutObjectCommandOutput> {
     const user_id = req.user?.['id'];
-    console.log('user_id:', user_id);
-    console.log('file name: ', file.originalname);
-    console.log('file size: ', file.size);
     return this.userService.uploadAvatar(
       user_id,
       file.buffer,

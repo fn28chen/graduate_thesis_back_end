@@ -18,19 +18,16 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = await this.extractTokenFromHeader(request);
-    console.log(token);
     if (!token) {
       throw new UnauthorizedException('Token is required');
     }
 
     const isBlacklisted = await this.checkBlacklist(token);
-    console.log(isBlacklisted);
     if (isBlacklisted) {
       throw new UnauthorizedException('Token is blacklisted');
     }
 
     const validToken = await this.checkValidToken(request, token);
-    console.log(validToken);
     if (!validToken) {
       throw new UnauthorizedException('Token is invalid');
     }

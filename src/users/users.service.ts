@@ -33,8 +33,8 @@ export class UsersService {
   }
 
   async getAllUsers() {
-    const users = this.usersRepository.find();
-    return users;
+    const users = await this.usersRepository.find();
+    return users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
   }
 
   async findOne(id: number) {
@@ -44,7 +44,8 @@ export class UsersService {
       },
     });
     if (user) {
-      return user;
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     }
     throw new NotFoundException('Could not find the user');
   }
@@ -84,7 +85,6 @@ export class UsersService {
     const presignedUrl = await getSignedUrl(this.s3Client as any, command, {
       expiresIn: seconds,
     });
-    console.log('Presigned URL is: ', presignedUrl);
     return presignedUrl;
   }
 

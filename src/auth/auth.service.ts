@@ -51,7 +51,6 @@ export class AuthService {
   }
 
   hashData(data: string) {
-    // console.log('Hashing data: ', typeof argon2.hash(data));
     return argon2.hash(data);
   }
 
@@ -84,7 +83,6 @@ export class AuthService {
     // Step 4: Create a token pair
     const token = await this.createTokenPair({ id: newUser.id });
     const { password: _, ...userWithoutPassword } = newUser;
-    console.log('Token: ', token);
     return { token, user: userWithoutPassword } as {
       token: TokenResponse;
       user: User;
@@ -110,7 +108,6 @@ export class AuthService {
 
     // Step 2: Compare the password from login and the password from the database
     const isPasswordMatched = await argon2.verify(user.password, password);
-    console.log('Password match:', isPasswordMatched);
     if (!isPasswordMatched) {
       throw new NotAcceptableException({
         statusCode: 406,
@@ -119,10 +116,8 @@ export class AuthService {
     }
 
     // Step 3: Create a token pair and save the refresh token to the database
-    console.log('User: ', user);
     const tokens = await this.createTokenPair({ id: user.id });
     const { password: _, ...userWithoutPassword } = user;
-    console.log('Token: ', tokens);
 
     return {
       accessToken: tokens.accessToken,

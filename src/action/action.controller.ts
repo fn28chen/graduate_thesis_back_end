@@ -14,9 +14,6 @@ import {
 } from '@nestjs/common';
 import { ActionService } from './action.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { createWriteStream } from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -79,7 +76,6 @@ export class ActionController {
     @Query('limit') limit?: number,
   ) {
     const user_id = req.user['id'];
-    console.log(user_id);
     console.log(
       '\x1b[33mReaching list controller\x1b[0m\n=========================================',
     );
@@ -147,14 +143,10 @@ export class ActionController {
     )
     file: Express.Multer.File,
   ) {
-    console.log(req.user);
     const user_id = req.user?.['id'];
     console.log(
       '\x1b[33mReaching upload controller\x1b[0m\n=========================================',
     );
-    console.log('user_id:', user_id);
-    console.log('file name: ', file.originalname);
-    console.log('file size: ', file.size);
     await this.actionService.upload(user_id, file.originalname, file.buffer);
     const result = await this.actionService.upload(
       user_id,

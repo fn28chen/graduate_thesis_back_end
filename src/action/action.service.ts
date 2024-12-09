@@ -60,7 +60,6 @@ export class ActionService {
         expiresIn: seconds,
       },
     );
-    console.log('Presigned URL is: ', presignedUrl);
     return presignedUrl;
   }
 
@@ -79,11 +78,9 @@ export class ActionService {
     try {
       const copyResponse = await this.s3Client.send(copyCommand);
       // Log success message
-      console.log('File moved to trash successfully:', copyResponse);
 
       const deleteResponse = await this.s3Client.send(deleteCommand);
       // Log success message
-      console.log('File deleted successfully:', deleteResponse);
 
       return { message: 'File moved to trash successfully' }; // Optionally return a message
     } catch (error) {
@@ -139,11 +136,9 @@ export class ActionService {
     try {
       const copyResponse = await this.s3Client.send(copyCommand);
       // Log success message
-      console.log('File restored successfully:', copyResponse);
 
       const deleteResponse = await this.s3Client.send(deleteCommand);
       // Log success message
-      console.log('File deleted from trash successfully:', deleteResponse);
 
       return { message: 'File restored successfully' }; // Optionally return a message
     } catch (error) {
@@ -164,7 +159,6 @@ export class ActionService {
     try {
       const deleteResponse = await this.s3Client.send(deleteCommand);
       // Log success message
-      console.log('File deleted successfully:', deleteResponse);
       return { message: 'File deleted successfully' }; // Optionally return a message
     } catch (error) {
       // Log the error for debugging
@@ -194,9 +188,7 @@ export class ActionService {
 
     // Tính toán chỉ số bắt đầu và kết thúc cho trang
     const startIndex = (page - 1) * limit;
-    console.log('startIndex:', startIndex);
     const endIndex = parseInt(String(startIndex)) + parseInt(String(limit));
-    console.log('endIndex:', endIndex);
 
     const filesWithUrls = listObjects.Contents.map((file) => {
       const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
