@@ -82,6 +82,33 @@ export class ActionController {
     return this.actionService.getFileFromUser(user_id, page, limit);
   }
 
+  @Get('total-size')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get total file size of current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Total file size',
+    schema: {
+      example: {
+        totalFiles: 23,
+      },
+    },
+  })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async totalFiles(@Req() req) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching total-file controller\x1b[0m\n=========================================',
+    );
+    return this.actionService.getTotalSize(user_id);
+  }
+
   @Post('upload')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Upload a file' })
@@ -154,6 +181,47 @@ export class ActionController {
       file.buffer,
     );
     return { message: 'File uploaded successfully', result };
+  }
+
+  @Get('get-full-url/:fileName')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Download a file with presigned link' })
+  @ApiResponse({
+    status: statusCodes.OK,
+    description: 'Presigned URL successfully generated.',
+    example: {
+      message: 'File uploaded successfully',
+      presignedUrl:
+        'http://test-bucket.s3.localhost.localstack.cloud:4566/1/qinshhihuang.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=test%2F20241126%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20241126T153236Z&X-Amz-Expires=1800&X-Amz-Signature=deeb0a131fa7921a2a5133187723e18c24bb61093639ea045347d3ca777b4f39&X-Amz-SignedHeaders=host&x-id=GetObject',
+    },
+  })
+  @ApiResponse({
+    status: statusCodes.BAD_REQUEST,
+    description: 'Bad Request.',
+    example: {
+      message: 'Bad Request',
+    },
+  })
+  @ApiResponse({
+    status: statusCodes.UNAUTHORIZED,
+    description: reasonPhrases.UNAUTHORIZED,
+    example: {
+      message: 'Unauthorized',
+    },
+  })
+  async getPresignedUrl(
+    @Req() req,
+    @Param('fileName') fileName: string,
+  ) {
+    const user_id = req.user['id'];
+    console.log(
+      '\x1b[33mReaching download-presigned controller\x1b[0m\n=========================================',
+    );
+    const presignedUrl = await this.actionService.getFullUrl(
+      user_id,
+      fileName,
+    );
+    return presignedUrl;
   }
 
   @Get('download-presigned/:fileName')

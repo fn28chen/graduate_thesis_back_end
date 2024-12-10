@@ -169,7 +169,44 @@ export class ActionService {
     }
   }
 
-  async getFileFromUser(user_id: string, page: number, limit: number) {
+  async getTotalSize(user_id: string) {
+    const listObjects = await this.s3Client.send(
+      new ListObjectsCommand({
+        Bucket: this.configService.get('AWS_BUCKET_NAME'),
+        Prefix: `${user_id}/`,
+      }),
+    );
+
+    if (!listObjects.Contents) {
+      return 0;
+    }
+
+    const totalSize = listObjects.Contents.reduce((acc, file) => {
+      return acc + file.Size;
+    }, 0);
+
+    return totalSize;
+  }
+
+  async getFullUrl(user_id: string, fileName: string) {
+    const params = {
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: `${user_id}/${fileName}`,
+    };
+
+    const getPresignedUrlCommand = new GetObjectCommand(params);
+    const seconds = 60 * 30;
+    const presignedUrl = await getSignedUrl(
+      this.s3Client as any,
+      getPresignedUrlCommand,
+      {
+        expiresIn: seconds,
+      },
+    );
+    return presignedUrl as string;
+  }
+
+  async getFileFromUser(user_id: string, page?: number, limit?: number) {
     const listObjects = await this.s3Client.send(
       new ListObjectsCommand({
         Bucket: this.configService.get('AWS_BUCKET_NAME'),
@@ -180,15 +217,11 @@ export class ActionService {
     if (!listObjects.Contents) {
       return {
         totalFiles: 0,
-        page,
-        limit,
+        page: page || 0,
+        limit: limit || 0,
         files: [],
       };
     }
-
-    // Tính toán chỉ số bắt đầu và kết thúc cho trang
-    const startIndex = (page - 1) * limit;
-    const endIndex = parseInt(String(startIndex)) + parseInt(String(limit));
 
     const filesWithUrls = listObjects.Contents.map((file) => {
       const url = `https://${this.configService.get('AWS_BUCKET_NAME')}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${file.Key}`;
@@ -198,7 +231,20 @@ export class ActionService {
       };
     });
 
-    // Cắt danh sách tệp theo trang
+    if (!page && !limit) {
+      return {
+        totalFiles: filesWithUrls.length,
+        page: 0,
+        limit: 0,
+        files: filesWithUrls,
+      };
+    }
+
+    // Calculate start and end index for pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    // Slice the file list according to pagination
     const paginatedFiles = filesWithUrls.slice(startIndex, endIndex);
 
     return {
